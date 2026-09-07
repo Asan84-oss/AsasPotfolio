@@ -1,0 +1,76 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("POSTGRES_PRISMA_URL")
+  directUrl = env("POSTGRES_URL_NON_POOLING")
+}
+
+// ─────────────────────────────────────────────
+// ADMIN — Single-tenant gatekeeper account
+// ─────────────────────────────────────────────
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String
+  isRegistered Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// PROJECT — Portfolio project entries
+// ─────────────────────────────────────────────
+model Project {
+  id          String   @id @default(uuid())
+  persona     String   // 'software_engineer' | 'content_creator'
+  name        String
+  imageUrl    String
+  projectUrl  String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// TESTIMONIAL — Client review entries
+// ─────────────────────────────────────────────
+model Testimonial {
+  id             String @id @default(uuid())
+  persona        String // 'software_engineer' | 'content_creator'
+  clientName     String
+  clientImageUrl String
+  reviewText     String
+  company        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// BIOGRAPHY — Pitch & bio text per persona
+// ─────────────────────────────────────────────
+model Biography {
+  id         String @id @default(uuid())
+  persona    String // 'software_engineer' | 'content_creator'
+  pitchTitle String
+  bioText    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+// ─────────────────────────────────────────────
+// ACTIVITY LOG — Audit trail for all admin actions
+// ─────────────────────────────────────────────
+model ActivityLog {
+  id               String   @id @default(uuid())
+  timestamp        DateTime @default(now())
+  targetSection    String
+  personaAffected  String
+  actionType       String   // 'CREATE' | 'UPDATE' | 'DELETE'
+  description      String
+}

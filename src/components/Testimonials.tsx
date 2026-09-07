@@ -1,0 +1,251 @@
+import { motion } from 'framer-motion';
+
+interface TestimonialsProps {
+  persona: 'engineer' | 'creator';
+}
+
+// Real testimonials data
+const engineerTestimonials = [
+  {
+    id: 'eng-t1',
+    persona: 'software_engineer',
+    clientName: 'Emmanuel Okoro',
+    clientImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa delivered our complaint tracking system ahead of schedule. His understanding of financial workflows and ability to translate complex requirements into clean, functional code is exceptional. The dashboard has transformed how we handle customer grievances.',
+    company: 'UBA Bank — Digital Operations'
+  },
+  {
+    id: 'eng-t2',
+    persona: 'software_engineer',
+    clientName: 'Dr. Amina Bello',
+    clientImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'The voice-cloned AI assistant Asa built for us is remarkable. His expertise in deep learning pipelines and real-time streaming architecture made what seemed impossible, possible. He communicates clearly and delivers consistently.',
+    company: 'NeuralFlow AI Labs'
+  }
+];
+
+const creatorTestimonials = [
+  {
+    id: 'cre-t1',
+    persona: 'content_creator',
+    clientName: 'Chioma Nwosu',
+    clientImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Working with Asa was a game-changer for our brand. He took our vague ideas and turned them into viral content that reached millions. His understanding of the TikTok algorithm is unmatched, and his editing skills are top-tier.',
+    company: 'GlowUp Beauty — Brand Director'
+  },
+  {
+    id: 'cre-t2',
+    persona: 'content_creator',
+    clientName: 'Tunde Adeyemi',
+    clientImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa helped us build a TikTok presence from scratch. Within 30 days, we had 4,000 engaged followers and content that consistently hit the For You page. His strategic approach to trend-jacking is brilliant.',
+    company: 'Lagos Streetwear Co.'
+  }
+];
+
+export default function Testimonials({ persona }: TestimonialsProps) {
+  const isEngineer = persona === 'engineer';
+  const filteredTestimonials = isEngineer ? engineerTestimonials : creatorTestimonials;
+
+  return (
+    <section
+      id="testimonials"
+      className="relative min-h-screen py-32 px-6"
+      style={{ zIndex: 1 }}
+    >
+      <div className="max-w-6xl mx-auto">
+        {/* Section Header */}
+        <motion.div
+          className="mb-16 text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6 }}
+        >
+          <span
+            className="block text-xs tracking-[0.3em] uppercase mb-4"
+            style={{
+              fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
+              color: isEngineer ? '#FF006E' : '#8B7355'
+            }}
+          >
+            {isEngineer ? '// Client Reviews' : 'Kind Words'}
+          </span>
+          <h2
+            className="text-4xl md:text-5xl font-bold"
+            style={{
+              fontFamily: isEngineer ? "'Fira Code', monospace" : "'Playfair Display', serif",
+              color: isEngineer ? '#00FF00' : '#2D2D2D',
+              textShadow: isEngineer ? '0 0 20px rgba(0, 255, 0, 0.2)' : 'none'
+            }}
+          >
+            {isEngineer ? 'testimonials.log()' : 'What People Say'}
+          </h2>
+        </motion.div>
+
+        {/* Testimonials Grid */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+          {filteredTestimonials.map((testimonial, index) => (
+            <motion.div
+              key={testimonial.id}
+              className="relative p-8 rounded-xl"
+              style={{
+                background: isEngineer
+                  ? 'rgba(10, 10, 15, 0.6)'
+                  : 'rgba(255, 255, 255, 0.6)',
+                border: isEngineer
+                  ? '1px solid rgba(0, 255, 0, 0.12)'
+                  : '1px solid rgba(45, 45, 45, 0.06)',
+                backdropFilter: 'blur(15px)',
+                boxShadow: isEngineer
+                  ? '0 0 30px rgba(0, 255, 0, 0.03)'
+                  : '0 10px 40px rgba(0,0,0,0.04)'
+              }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ delay: index * 0.2, duration: 0.6 }}
+              whileHover={{
+                y: -5,
+                boxShadow: isEngineer
+                  ? '0 0 50px rgba(0, 255, 0, 0.08)'
+                  : '0 20px 60px rgba(0,0,0,0.08)'
+              }}
+            >
+              {/* Quote mark */}
+              <span
+                className="absolute top-4 left-6 text-5xl opacity-20"
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  color: isEngineer ? '#00FF00' : '#2D2D2D'
+                }}
+              >
+                "
+              </span>
+
+              {/* Review text */}
+              <p
+                className="text-base leading-relaxed mb-6 mt-6 italic"
+                style={{
+                  fontFamily: isEngineer ? "'Fira Code', monospace" : "'Playfair Display', serif",
+                  color: isEngineer ? 'rgba(0, 255, 0, 0.6)' : 'rgba(45, 45, 45, 0.7)',
+                  fontSize: isEngineer ? '13px' : '16px',
+                  fontStyle: isEngineer ? 'normal' : 'italic'
+                }}
+              >
+                {testimonial.reviewText}
+              </p>
+
+              {/* Client info */}
+              <div className="flex items-center gap-4">
+                <img
+                  src={testimonial.clientImageUrl}
+                  alt={testimonial.clientName}
+                  className="w-12 h-12 rounded-full object-cover"
+                  style={{
+                    border: isEngineer
+                      ? '2px solid rgba(0, 255, 0, 0.3)'
+                      : '2px solid rgba(45, 45, 45, 0.1)'
+                  }}
+                />
+                <div>
+                  <p
+                    className="text-sm font-bold"
+                    style={{
+                      fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
+                      color: isEngineer ? '#00FF00' : '#2D2D2D'
+                    }}
+                  >
+                    {testimonial.clientName}
+                  </p>
+                  <p
+                    className="text-xs"
+                    style={{
+                      fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
+                      color: isEngineer ? 'rgba(255, 0, 110, 0.7)' : 'rgba(45, 45, 45, 0.5)'
+                    }}
+                  >
+                    {testimonial.company}
+                  </p>
+                </div>
+              </div>
+
+              {/* Corner decoration for engineer */}
+              {isEngineer && (
+                <div className="absolute top-0 right-0 w-16 h-16 overflow-hidden">
+                  <div
+                    className="absolute top-2 right-2 w-2 h-2 rounded-full"
+                    style={{ background: '#00FF00', boxShadow: '0 0 6px rgba(0, 255, 0, 0.5)' }}
+                  />
+                  <div
+                    className="absolute top-2 right-6 w-2 h-2 rounded-full"
+                    style={{ background: '#FF006E', boxShadow: '0 0 6px rgba(255, 0, 110, 0.5)' }}
+                  />
+                </div>
+              )}
+            </motion.div>
+          ))}
+        </div>
+
+        {/* Contact CTA */}
+        <motion.div
+          className="mt-20 text-center"
+          initial={{ opacity: 0, y: 30 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.6, delay: 0.3 }}
+        >
+          <div
+            className="inline-block p-10 rounded-2xl"
+            style={{
+              background: isEngineer
+                ? 'rgba(0, 255, 0, 0.03)'
+                : 'rgba(45, 45, 45, 0.02)',
+              border: isEngineer
+                ? '1px solid rgba(0, 255, 0, 0.1)'
+                : '1px solid rgba(45, 45, 45, 0.06)'
+            }}
+          >
+            <h3
+              className="text-2xl md:text-3xl font-bold mb-4"
+              style={{
+                fontFamily: isEngineer ? "'Fira Code', monospace" : "'Playfair Display', serif",
+                color: isEngineer ? '#00FF00' : '#2D2D2D'
+              }}
+            >
+              {isEngineer ? 'Ready to build something?' : "Let's create together"}
+            </h3>
+            <p
+              className="text-sm mb-6"
+              style={{
+                fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
+                color: isEngineer ? 'rgba(0, 255, 0, 0.5)' : 'rgba(45, 45, 45, 0.5)'
+              }}
+            >
+              {isEngineer
+                ? '// Open for freelance & full-time opportunities'
+                : 'Open for collaborations, partnerships, and creative projects'}
+            </p>
+            <motion.a
+              href="mailto:asa746090@gmail.com"
+              className="inline-block px-8 py-4 rounded-lg text-sm font-bold tracking-wider uppercase"
+              style={{
+                fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
+                background: isEngineer
+                  ? 'linear-gradient(135deg, rgba(0, 255, 0, 0.15), rgba(255, 0, 110, 0.15))'
+                  : 'linear-gradient(135deg, #2D2D2D, #444)',
+                color: isEngineer ? '#00FF00' : '#FAF8F5',
+                border: isEngineer ? '1px solid rgba(0, 255, 0, 0.3)' : 'none',
+                boxShadow: isEngineer ? '0 0 20px rgba(0, 255, 0, 0.1)' : '0 4px 15px rgba(0,0,0,0.2)'
+              }}
+              whileHover={{ scale: 1.05, y: -2 }}
+              whileTap={{ scale: 0.95 }}
+            >
+              {isEngineer ? '$ contact --email' : 'Get in Touch'}
+            </motion.a>
+          </div>
+        </motion.div>
+      </div>
+    </section>
+  );
+}
