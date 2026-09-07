@@ -1,1 +1,73 @@
 @import "tailwindcss";
+
+@theme {
+  --font-fira: 'Fira Code', monospace;
+  --font-playfair: 'Playfair Display', serif;
+  --font-inter: 'Inter', sans-serif;
+  --color-neon-green: #00FF00;
+  --color-neon-pink: #FF006E;
+  --color-obsidian: #0a0a0f;
+  --color-obsidian-light: #12121a;
+  --color-alabaster: #FAF8F5;
+  --color-cream: #F5F0EB;
+  --color-charcoal: #2D2D2D;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  padding: 0;
+  font-family: var(--font-inter);
+}
+
+/* Engineer theme scrollbar */
+.engineer-theme::-webkit-scrollbar {
+  width: 6px;
+}
+.engineer-theme::-webkit-scrollbar-track {
+  background: #0a0a0f;
+}
+.engineer-theme::-webkit-scrollbar-thumb {
+  background: #00FF00;
+  border-radius: 3px;
+}
+
+/* Creator theme scrollbar */
+.creator-theme::-webkit-scrollbar {
+  width: 6px;
+}
+.creator-theme::-webkit-scrollbar-track {
+  background: #FAF8F5;
+}
+.creator-theme::-webkit-scrollbar-thumb {
+  background: #2D2D2D;
+  border-radius: 3px;
+}
+
+/* Matrix rain animation */
+@keyframes matrix-fall {
+  0% { transform: translateY(-100%); opacity: 1; }
+  100% { transform: translateY(100vh); opacity: 0; }
+}
+
+/* Blob morph animation */
+@keyframes blob-morph {
+  0%, 100% { border-radius: 60% 40% 30% 70% / 60% 30% 70% 40%; }
+  25% { border-radius: 30% 60% 70% 40% / 50% 60% 30% 60%; }
+  50% { border-radius: 50% 60% 30% 60% / 30% 60% 70% 40%; }
+  75% { border-radius: 60% 40% 60% 30% / 60% 40% 30% 70%; }
+}
+
+@keyframes float {
+  0%, 100% { transform: translate(0, 0) scale(1); }
+  33% { transform: translate(30px, -30px) scale(1.05); }
+  66% { transform: translate(-20px, 20px) scale(0.95); }
+}
+
+@keyframes pulse-glow {
+  0%, 100% { box-shadow: 0 0 20px rgba(0, 255, 0, 0.3); }
+  50% { box-shadow: 0 0 40px rgba(0, 255, 0, 0.6); }
+}
