@@ -24,109 +24,220 @@ export interface Biography {
   bioText: string;
 }
 
-export const projects: Project[] = [
+export interface ActivityLog {
+  id: string;
+  timestamp: string;
+  targetSection: string;
+  personaAffected: string;
+  actionType: 'CREATE' | 'UPDATE' | 'DELETE';
+  description: string;
+}
+
+export interface Admin {
+  id: string;
+  email: string;
+  password: string;
+  isRegistered: boolean;
+}
+
+// Default data
+export const defaultProjects: Project[] = [
   {
-    id: '1',
+    id: 'p1',
     persona: 'software_engineer',
-    name: 'Neural Commerce Platform',
-    imageUrl: 'https://images.unsplash.com/photo-1555066931-4365d14bab8c?w=600&h=400&fit=crop',
+    name: 'Centralized Customer Complaint Tracking System for UBA Bank',
+    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'Full-stack e-commerce platform with AI-powered product recommendations, real-time inventory management, and seamless payment integration.',
-    createdAt: '2024-01-15'
+    description: 'A comprehensive HTML, CSS, and JavaScript analytics dashboard designed to track, categorize, and resolve financial grievances in real-time. Built with data visualization pipelines for UBA Bank\'s customer service operations.',
+    createdAt: '2024-09-15'
   },
   {
-    id: '2',
+    id: 'p2',
     persona: 'software_engineer',
-    name: 'CloudSync Dashboard',
-    imageUrl: 'https://images.unsplash.com/photo-1460925895917-afdab827c52f?w=600&h=400&fit=crop',
+    name: 'Voice-Cloned AI Assistant Project',
+    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'Real-time cloud infrastructure monitoring dashboard with WebSocket connections, automated scaling alerts, and multi-provider support.',
-    createdAt: '2024-03-20'
+    description: 'An autonomous AI assistant featuring voice-cloning pipelines that stream natural interactions over WhatsApp. Integrates DeepSeek and custom LLM fine-tuning for context-aware conversational AI.',
+    createdAt: '2025-01-20'
   },
   {
-    id: '3',
+    id: 'p3',
     persona: 'software_engineer',
-    name: 'DevOps Pipeline Automation',
-    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=400&fit=crop',
+    name: 'Transactional Architecture Microservices',
+    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbd3154?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'CI/CD pipeline automation tool with Docker orchestration, Kubernetes deployment scripts, and comprehensive testing suites.',
-    createdAt: '2024-05-10'
+    description: 'Scalable Node.js microservices architecture handling high-volume financial transactions with ACID compliance, event-driven messaging, and real-time monitoring dashboards.',
+    createdAt: '2024-11-08'
   },
   {
-    id: '4',
-    persona: 'content_creator',
-    name: 'The Digital Nomad Diaries',
-    imageUrl: 'https://images.unsplash.com/photo-1506905925346-21bda4d32df4?w=600&h=400&fit=crop',
+    id: 'p4',
+    persona: 'software_engineer',
+    name: 'Autonomous Code Review Agent',
+    imageUrl: 'https://images.unsplash.com/photo-1555949963-aa79dcee981c?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'A visual storytelling series documenting the intersection of technology, culture, and remote work across African cities.',
-    createdAt: '2024-02-01'
+    description: 'AI-powered code review agent that autonomously analyzes pull requests, identifies bugs, suggests optimizations, and enforces coding standards across distributed development teams.',
+    createdAt: '2025-02-14'
   },
   {
-    id: '5',
+    id: 'p5',
     persona: 'content_creator',
-    name: 'Tech & Culture Podcast',
-    imageUrl: 'https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=600&h=400&fit=crop',
+    name: 'TikTok Community: 0 → 50,000+ Organic Followers',
+    imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'Bilingual podcast exploring the African tech ecosystem, featuring interviews with founders, developers, and creative professionals.',
-    createdAt: '2024-04-15'
+    description: 'A comprehensive case study on scaling a primary TikTok community from zero to 50,000+ followers in just 3 months using algorithmic content strategies, trend-jacking frameworks, and data-driven posting schedules.',
+    createdAt: '2024-12-01'
   },
   {
-    id: '6',
+    id: 'p6',
     persona: 'content_creator',
-    name: 'Code & Creativity Workshop',
-    imageUrl: 'https://images.unsplash.com/photo-1531482615713-2afd69097998?w=600&h=400&fit=crop',
+    name: 'Backup Asset: 4,000+ Followers in 30 Days',
+    imageUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&h=400&fit=crop',
     projectUrl: '#',
-    description: 'Educational content series teaching creative coding, generative art, and interactive design to aspiring developers in Central Africa.',
-    createdAt: '2024-06-01'
+    description: 'Built a secondary content asset from scratch to 4,000+ active followers in 30 days using advanced CapCut editing suites, viral hook frameworks, and cross-platform repurposing strategies.',
+    createdAt: '2025-01-10'
+  },
+  {
+    id: 'p7',
+    persona: 'content_creator',
+    name: 'Brand Campaign: Viral Short-Form Video Series',
+    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&h=400&fit=crop',
+    projectUrl: '#',
+    description: 'Produced a viral short-form video campaign for a lifestyle brand, translating brand messaging into 15 high-engagement video assets that collectively generated 2M+ views across platforms.',
+    createdAt: '2025-03-05'
   }
 ];
 
-export const testimonials: Testimonial[] = [
+export const defaultTestimonials: Testimonial[] = [
   {
-    id: '1',
+    id: 't1',
     persona: 'software_engineer',
-    clientName: 'Marie Tchoumi',
-    clientImageUrl: 'https://images.unsplash.com/photo-1531123897727-8f129e1688ce?w=100&h=100&fit=crop&crop=face',
-    reviewText: 'Samuel delivered an exceptional full-stack solution that exceeded our expectations. His attention to performance optimization and clean architecture is remarkable.',
-    company: 'TechVentures Africa'
-  },
-  {
-    id: '2',
-    persona: 'software_engineer',
-    clientName: 'David Nkomo',
+    clientName: 'Emmanuel Okoro',
     clientImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
-    reviewText: 'Working with Samuel was a game-changer for our startup. He built our entire backend infrastructure from scratch, handling complex real-time data flows with ease.',
-    company: 'FinFlow Solutions'
+    reviewText: 'Asa delivered a robust complaint tracking system that reduced our resolution time by 60%. His understanding of transactional architecture and data pipelines is exceptional. He doesn\'t just write code — he engineers solutions.',
+    company: 'UBA Bank — Digital Innovation'
   },
   {
-    id: '3',
-    persona: 'content_creator',
-    clientName: 'Amina Bello',
-    clientImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
-    reviewText: 'Samuel has a unique gift for translating complex technical concepts into engaging, accessible content. His bilingual approach makes tech truly inclusive.',
-    company: 'AfriMedia Group'
+    id: 't2',
+    persona: 'software_engineer',
+    clientName: 'Dr. Amina Bello',
+    clientImageUrl: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'The AI voice assistant Asa built for our WhatsApp integration is production-grade. His ability to merge autonomous agents with real-time voice cloning pipelines is rare. Highly recommend for any complex backend project.',
+    company: 'NeuralFlow Labs'
   },
   {
-    id: '4',
+    id: 't3',
     persona: 'content_creator',
-    clientName: 'Jean-Pierre Essomba',
+    clientName: 'Chioma Nwosu',
+    clientImageUrl: 'https://images.unsplash.com/photo-1580489944761-15a19d654956?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa scaled our TikTok presence from nothing to 50K followers in 3 months. His understanding of the algorithm is unmatched. Every piece of content was strategically crafted for maximum reach and engagement.',
+    company: 'Luxe Lifestyle Brand'
+  },
+  {
+    id: 't4',
+    persona: 'content_creator',
+    clientName: 'Tunde Adeyemi',
     clientImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
-    reviewText: 'The content strategy Samuel developed for our brand tripled our engagement. His understanding of both the technical and creative sides is truly rare.',
-    company: 'Digital Douala Agency'
+    reviewText: 'The short-form video campaign Asa produced generated over 2 million views. His editing skills in CapCut combined with his trend-jacking instincts make him a powerhouse content creator. Absolute professional.',
+    company: 'Viral Media Group'
   }
 ];
 
-export const biography: Biography[] = [
+export const defaultBiographies: Biography[] = [
   {
-    id: '1',
+    id: 'b1',
     persona: 'software_engineer',
-    pitchTitle: 'Building the Future, One Line at a Time',
-    bioText: 'I\'m a full-stack software engineer based in Douala, Cameroon, specializing in building scalable web applications, cloud infrastructure, and developer tools. With expertise spanning React, Node.js, Python, and cloud-native architectures, I transform complex business requirements into elegant, performant solutions. My mission is to bridge the gap between African innovation and global technology standards.'
+    pitchTitle: 'Engineering Systems That Scale',
+    bioText: 'Data-driven Software Engineer specializing in full-stack applications, autonomous AI coding agents, and robust transactional architectures. I eliminate system bottlenecks and scale backend infrastructure seamlessly. Based in Douala, Cameroon — building the future of intelligent software, one deployment at a time.'
   },
   {
-    id: '2',
+    id: 'b2',
     persona: 'content_creator',
-    pitchTitle: 'Stories That Connect, Content That Inspires',
-    bioText: 'As a bilingual content creator fluent in English and French, I craft compelling narratives that celebrate Africa\'s growing tech ecosystem. Through podcasts, visual storytelling, and educational content, I make technology accessible and inspiring. My work has reached audiences across 15+ African countries, fostering a community of creators who believe in the power of digital storytelling.'
+    pitchTitle: 'Stories That Move Millions',
+    bioText: 'Algorithm-focused Digital Marketer and Content Creator. Scaled an organic TikTok community to 50,000+ followers in 3 months. I translate brand messages into viral short-form video assets using clean visual storytelling. Every frame is intentional. Every hook is engineered.'
   }
 ];
+
+// Local storage helper functions (simulates database)
+const STORAGE_KEYS = {
+  projects: 'asa_projects',
+  testimonials: 'asa_testimonials',
+  biographies: 'asa_biographies',
+  activityLog: 'asa_activity_log',
+  admin: 'asa_admin',
+  authToken: 'asa_auth_token'
+};
+
+export function getProjects(): Project[] {
+  const stored = localStorage.getItem(STORAGE_KEYS.projects);
+  if (stored) return JSON.parse(stored);
+  localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(defaultProjects));
+  return defaultProjects;
+}
+
+export function saveProjects(projects: Project[]): void {
+  localStorage.setItem(STORAGE_KEYS.projects, JSON.stringify(projects));
+}
+
+export function getTestimonials(): Testimonial[] {
+  const stored = localStorage.getItem(STORAGE_KEYS.testimonials);
+  if (stored) return JSON.parse(stored);
+  localStorage.setItem(STORAGE_KEYS.testimonials, JSON.stringify(defaultTestimonials));
+  return defaultTestimonials;
+}
+
+export function saveTestimonials(testimonials: Testimonial[]): void {
+  localStorage.setItem(STORAGE_KEYS.testimonials, JSON.stringify(testimonials));
+}
+
+export function getBiographies(): Biography[] {
+  const stored = localStorage.getItem(STORAGE_KEYS.biographies);
+  if (stored) return JSON.parse(stored);
+  localStorage.setItem(STORAGE_KEYS.biographies, JSON.stringify(defaultBiographies));
+  return defaultBiographies;
+}
+
+export function saveBiographies(bios: Biography[]): void {
+  localStorage.setItem(STORAGE_KEYS.biographies, JSON.stringify(bios));
+}
+
+export function getActivityLog(): ActivityLog[] {
+  const stored = localStorage.getItem(STORAGE_KEYS.activityLog);
+  if (stored) return JSON.parse(stored);
+  return [];
+}
+
+export function addActivityLog(entry: Omit<ActivityLog, 'id' | 'timestamp'>): void {
+  const logs = getActivityLog();
+  logs.unshift({
+    ...entry,
+    id: crypto.randomUUID(),
+    timestamp: new Date().toISOString()
+  });
+  localStorage.setItem(STORAGE_KEYS.activityLog, JSON.stringify(logs));
+}
+
+export function getAdmin(): Admin | null {
+  const stored = localStorage.getItem(STORAGE_KEYS.admin);
+  if (stored) return JSON.parse(stored);
+  return null;
+}
+
+export function saveAdmin(admin: Admin): void {
+  localStorage.setItem(STORAGE_KEYS.admin, JSON.stringify(admin));
+}
+
+export function getAuthToken(): string | null {
+  return localStorage.getItem(STORAGE_KEYS.authToken);
+}
+
+export function setAuthToken(token: string): void {
+  localStorage.setItem(STORAGE_KEYS.authToken, token);
+}
+
+export function clearAuthToken(): void {
+  localStorage.removeItem(STORAGE_KEYS.authToken);
+}
+
+export function isAuthenticated(): boolean {
+  return !!getAuthToken();
+}

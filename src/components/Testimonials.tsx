@@ -1,5 +1,5 @@
 import { motion } from 'framer-motion';
-import { testimonials } from '../data/mockData';
+import { getTestimonials, type Testimonial } from '../data/mockData';
 
 interface TestimonialsProps {
   persona: 'engineer' | 'creator';
@@ -7,7 +7,7 @@ interface TestimonialsProps {
 
 export default function Testimonials({ persona }: TestimonialsProps) {
   const isEngineer = persona === 'engineer';
-  const filteredTestimonials = testimonials.filter(t =>
+  const filteredTestimonials = getTestimonials().filter(t =>
     isEngineer ? t.persona === 'software_engineer' : t.persona === 'content_creator'
   );
 
@@ -49,7 +49,7 @@ export default function Testimonials({ persona }: TestimonialsProps) {
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredTestimonials.map((testimonial, index) => (
+          {filteredTestimonials.map((testimonial: Testimonial, index: number) => (
             <motion.div
               key={testimonial.id}
               className="relative p-8 rounded-xl"
@@ -89,12 +89,16 @@ export default function Testimonials({ persona }: TestimonialsProps) {
 
               {/* Review text */}
               <p
-                className="text-base leading-relaxed mb-6 mt-6 italic"
+                className="leading-relaxed mb-8 mt-6"
                 style={{
                   fontFamily: isEngineer ? "'Fira Code', monospace" : "'Playfair Display', serif",
                   color: isEngineer ? 'rgba(0, 255, 0, 0.6)' : 'rgba(45, 45, 45, 0.7)',
-                  fontSize: isEngineer ? '13px' : '16px',
-                  fontStyle: isEngineer ? 'normal' : 'italic'
+                  fontSize: isEngineer ? '12px' : '16px',
+                  fontStyle: isEngineer ? 'normal' : 'italic',
+                  lineHeight: isEngineer ? '1.8' : '1.8',
+                  padding: isEngineer ? '12px' : '0',
+                  background: isEngineer ? 'rgba(0, 255, 0, 0.02)' : 'transparent',
+                  borderRadius: isEngineer ? '6px' : '0'
                 }}
               >
                 {testimonial.reviewText}
@@ -191,7 +195,7 @@ export default function Testimonials({ persona }: TestimonialsProps) {
                 : 'Open for collaborations, partnerships, and creative projects'}
             </p>
             <motion.a
-              href="mailto:asa.samuelsbless@gmail.com"
+              href="mailto:asa.samuel@example.com"
               className="inline-block px-8 py-4 rounded-lg text-sm font-bold tracking-wider uppercase"
               style={{
                 fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
@@ -210,27 +214,6 @@ export default function Testimonials({ persona }: TestimonialsProps) {
           </div>
         </motion.div>
       </div>
-
-      {/* Footer */}
-      <motion.footer
-        className="mt-20 text-center pb-10"
-        initial={{ opacity: 0 }}
-        whileInView={{ opacity: 1 }}
-        viewport={{ once: true }}
-      >
-        <p
-          className="text-xs"
-          style={{
-            fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-            color: isEngineer ? 'rgba(0, 255, 0, 0.3)' : 'rgba(45, 45, 45, 0.3)'
-          }}
-        >
-          {isEngineer
-            ? `// © ${new Date().getFullYear()} Asa Samuel Bless. All rights reserved. Built with ❤️ from Douala.`
-            : `© ${new Date().getFullYear()} Asa Samuel Bless. Crafted with intention in Douala, Cameroon.`
-          }
-        </p>
-      </motion.footer>
     </section>
   );
 }

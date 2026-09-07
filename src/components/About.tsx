@@ -1,19 +1,44 @@
 import { motion } from 'framer-motion';
-import { biography } from '../data/mockData';
+import { getBiographies } from '../data/mockData';
 
 interface AboutProps {
   persona: 'engineer' | 'creator';
 }
 
+const engineerSkills = [
+  { category: 'Backend', items: ['Node.js', 'PHP', 'Python', 'PostgreSQL'] },
+  { category: 'Frontend', items: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
+  { category: 'AI/ML', items: ['DeepSeek', 'Qwen', 'Gemini', 'LangChain'] },
+  { category: 'DevOps', items: ['Docker', 'Vercel', 'AWS', 'CI/CD'] },
+];
+
+const engineerRules = [
+  'Write clean, documented, testable code',
+  'Prioritize system reliability over speed',
+  'Design for scale from day one',
+  'Automate repetitive workflows',
+  'Security-first architecture decisions',
+];
+
+const creatorExpertise = [
+  {
+    title: 'Media Production',
+    description: 'Advanced proficiency in CapCut, DaVinci Resolve, and Adobe Creative Suite. Specializing in short-form video optimization for TikTok, Instagram Reels, and YouTube Shorts.'
+  },
+  {
+    title: 'Content Strategy',
+    description: 'Data-driven content calendars, algorithmic trend analysis, audience growth frameworks, and cross-platform repurposing systems that maximize organic reach.'
+  },
+  {
+    title: 'Creative Execution',
+    description: 'From concept to viral delivery — hook engineering, visual storytelling, brand voice translation, and community engagement protocols that build loyal audiences.'
+  }
+];
+
 export default function About({ persona }: AboutProps) {
   const isEngineer = persona === 'engineer';
-  const bio = biography.find(b =>
-    isEngineer ? b.persona === 'software_engineer' : b.persona === 'content_creator'
-  );
-
-  const skills = isEngineer
-    ? ['React', 'TypeScript', 'Node.js', 'Python', 'PostgreSQL', 'Docker', 'AWS', 'Next.js', 'GraphQL', 'Tailwind CSS']
-    : ['Content Strategy', 'Bilingual Writing', 'Podcast Production', 'Video Editing', 'Social Media', 'Brand Design', 'Storytelling', 'SEO', 'Analytics', 'Community Building'];
+  const bios = getBiographies();
+  const bio = bios.find(b => b.persona === (isEngineer ? 'software_engineer' : 'content_creator'));
 
   return (
     <section
@@ -21,7 +46,7 @@ export default function About({ persona }: AboutProps) {
       className="relative min-h-screen py-32 px-6"
       style={{ zIndex: 1 }}
     >
-      <div className="max-w-6xl mx-auto">
+      <div className="max-w-7xl mx-auto">
         {/* Section Header */}
         <motion.div
           className="mb-16"
@@ -37,7 +62,7 @@ export default function About({ persona }: AboutProps) {
               color: isEngineer ? '#FF006E' : '#8B7355'
             }}
           >
-            {isEngineer ? '// About Me' : 'Biography'}
+            {isEngineer ? '// System Profile' : 'About'}
           </span>
           <h2
             className="text-4xl md:text-5xl font-bold"
@@ -47,136 +72,64 @@ export default function About({ persona }: AboutProps) {
               textShadow: isEngineer ? '0 0 20px rgba(0, 255, 0, 0.2)' : 'none'
             }}
           >
-            {bio?.pitchTitle || ''}
+            {isEngineer ? 'about.config()' : 'The Story'}
           </h2>
         </motion.div>
 
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 items-start">
-          {/* Bio text */}
-          <motion.div
-            initial={{ opacity: 0, x: -30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.2 }}
-          >
-            <p
-              className="text-lg leading-relaxed mb-8"
+        {isEngineer ? (
+          /* ENGINEER MODE: Dashboard Layout */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            {/* Bio Panel */}
+            <motion.div
+              className="lg:col-span-2 p-6 rounded-xl"
               style={{
-                fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-                color: isEngineer ? 'rgba(0, 255, 0, 0.7)' : 'rgba(45, 45, 45, 0.7)',
-                fontSize: isEngineer ? '14px' : '16px'
+                background: 'rgba(10, 10, 15, 0.7)',
+                border: '1px solid rgba(0, 255, 0, 0.12)',
+                backdropFilter: 'blur(10px)'
               }}
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6 }}
             >
-              {bio?.bioText || ''}
-            </p>
-
-            {/* Location badge */}
-            <div
-              className="inline-flex items-center gap-3 px-5 py-3 rounded-lg"
-              style={{
-                background: isEngineer ? 'rgba(0, 255, 0, 0.05)' : 'rgba(45, 45, 45, 0.03)',
-                border: isEngineer ? '1px solid rgba(0, 255, 0, 0.15)' : '1px solid rgba(45, 45, 45, 0.08)'
-              }}
-            >
-              <span className="text-2xl">📍</span>
-              <div>
-                <p
-                  className="text-sm font-medium"
-                  style={{
-                    fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-                    color: isEngineer ? '#00FF00' : '#2D2D2D'
-                  }}
-                >
-                  Douala, Cameroon
-                </p>
-                <p
+              <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.1)' }}>
+                <span className="w-2 h-2 rounded-full" style={{ background: '#00FF00', boxShadow: '0 0 6px rgba(0,255,0,0.5)' }} />
+                <span
                   className="text-xs"
-                  style={{
-                    fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-                    color: isEngineer ? 'rgba(0, 255, 0, 0.5)' : 'rgba(45, 45, 45, 0.5)'
-                  }}
+                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.5)' }}
                 >
-                  {isEngineer ? 'GMT+1 | Remote Worldwide' : 'Available for collaborations worldwide'}
-                </p>
+                  profile.json
+                </span>
               </div>
-            </div>
-          </motion.div>
+              <h3
+                className="text-lg font-bold mb-3"
+                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
+              >
+                {bio?.pitchTitle || 'Engineering Systems That Scale'}
+              </h3>
+              <p
+                className="text-sm leading-relaxed"
+                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.55)', fontSize: '12px' }}
+              >
+                {bio?.bioText || ''}
+              </p>
 
-          {/* Skills / Expertise */}
-          <motion.div
-            initial={{ opacity: 0, x: 30 }}
-            whileInView={{ opacity: 1, x: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.6, delay: 0.4 }}
-          >
-            <h3
-              className="text-sm font-bold tracking-[0.2em] uppercase mb-6"
-              style={{
-                fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-                color: isEngineer ? '#FF006E' : '#8B7355'
-              }}
-            >
-              {isEngineer ? 'tech_stack[]' : 'Areas of Expertise'}
-            </h3>
-            <div className="flex flex-wrap gap-3">
-              {skills.map((skill, i) => (
-                <motion.span
-                  key={skill}
-                  className="px-4 py-2 rounded-lg text-sm font-medium"
-                  style={{
-                    fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
-                    fontSize: isEngineer ? '12px' : '13px',
-                    background: isEngineer
-                      ? 'rgba(0, 255, 0, 0.05)'
-                      : 'rgba(45, 45, 45, 0.04)',
-                    color: isEngineer ? 'rgba(0, 255, 0, 0.8)' : 'rgba(45, 45, 45, 0.7)',
-                    border: isEngineer
-                      ? '1px solid rgba(0, 255, 0, 0.15)'
-                      : '1px solid rgba(45, 45, 45, 0.08)'
-                  }}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  whileInView={{ opacity: 1, scale: 1 }}
-                  viewport={{ once: true }}
-                  transition={{ delay: 0.5 + i * 0.05 }}
-                  whileHover={{
-                    scale: 1.05,
-                    background: isEngineer
-                      ? 'rgba(0, 255, 0, 0.1)'
-                      : 'rgba(45, 45, 45, 0.08)',
-                    borderColor: isEngineer
-                      ? 'rgba(0, 255, 0, 0.4)'
-                      : 'rgba(45, 45, 45, 0.2)'
-                  }}
-                >
-                  {isEngineer ? `${skill}` : skill}
-                </motion.span>
-              ))}
-            </div>
-
-            {/* Stats for engineer */}
-            {isEngineer && (
-              <div className="mt-10 grid grid-cols-3 gap-4">
+              {/* Stats */}
+              <div className="grid grid-cols-3 gap-4 mt-6 pt-4" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.08)' }}>
                 {[
-                  { label: 'Years Exp.', value: '5+' },
-                  { label: 'Projects', value: '40+' },
-                  { label: 'Clients', value: '25+' }
+                  { label: 'Years Exp', value: '3+' },
+                  { label: 'Projects', value: '15+' },
+                  { label: 'Uptime', value: '99.9%' }
                 ].map((stat) => (
-                  <div
-                    key={stat.label}
-                    className="text-center p-4 rounded-lg"
-                    style={{
-                      background: 'rgba(0, 255, 0, 0.03)',
-                      border: '1px solid rgba(0, 255, 0, 0.1)'
-                    }}
-                  >
+                  <div key={stat.label} className="text-center">
                     <div
-                      className="text-2xl font-bold"
-                      style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
+                      className="text-xl font-bold"
+                      style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
                     >
                       {stat.value}
                     </div>
                     <div
-                      className="text-xs mt-1"
+                      className="text-[10px] mt-1"
                       style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
                     >
                       {stat.label}
@@ -184,23 +137,137 @@ export default function About({ persona }: AboutProps) {
                   </div>
                 ))}
               </div>
-            )}
+            </motion.div>
 
-            {/* Stats for creator */}
-            {!isEngineer && (
-              <div className="mt-10 grid grid-cols-3 gap-4">
+            {/* Working Rules Panel */}
+            <motion.div
+              className="p-6 rounded-xl"
+              style={{
+                background: 'rgba(10, 10, 15, 0.7)',
+                border: '1px solid rgba(255, 0, 110, 0.12)',
+                backdropFilter: 'blur(10px)'
+              }}
+              initial={{ opacity: 0, x: 30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.2 }}
+            >
+              <h3
+                className="text-sm font-bold mb-4"
+                style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
+              >
+                {'// Working Rules'}
+              </h3>
+              <ul className="space-y-3">
+                {engineerRules.map((rule, i) => (
+                  <li key={i} className="flex items-start gap-2">
+                    <span style={{ color: '#00FF00', fontFamily: "'Fira Code', monospace", fontSize: '10px' }}>
+                      [{String(i + 1).padStart(2, '0')}]
+                    </span>
+                    <span
+                      className="text-xs"
+                      style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.5)' }}
+                    >
+                      {rule}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            </motion.div>
+
+            {/* Tech Stack Panel */}
+            <motion.div
+              className="lg:col-span-3 p-6 rounded-xl"
+              style={{
+                background: 'rgba(10, 10, 15, 0.7)',
+                border: '1px solid rgba(0, 255, 0, 0.12)',
+                backdropFilter: 'blur(10px)'
+              }}
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.6, delay: 0.3 }}
+            >
+              <h3
+                className="text-sm font-bold mb-6"
+                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
+              >
+                {'// Tech Stack'}
+              </h3>
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
+                {engineerSkills.map((category) => (
+                  <div key={category.category}>
+                    <h4
+                      className="text-xs font-bold mb-3"
+                      style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
+                    >
+                      {category.category}
+                    </h4>
+                    <div className="flex flex-wrap gap-2">
+                      {category.items.map((skill) => (
+                        <span
+                          key={skill}
+                          className="px-2 py-1 rounded text-[10px]"
+                          style={{
+                            fontFamily: "'Fira Code', monospace",
+                            background: 'rgba(0, 255, 0, 0.05)',
+                            border: '1px solid rgba(0, 255, 0, 0.15)',
+                            color: 'rgba(0, 255, 0, 0.7)'
+                          }}
+                        >
+                          {skill}
+                        </span>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </motion.div>
+          </div>
+        ) : (
+          /* CREATOR MODE: Editorial Multi-Column Layout */
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
+            {/* Bio Narrative */}
+            <motion.div
+              className="lg:col-span-5"
+              initial={{ opacity: 0, x: -30 }}
+              whileInView={{ opacity: 1, x: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8 }}
+            >
+              <h3
+                className="text-3xl font-bold mb-6"
+                style={{
+                  fontFamily: "'Playfair Display', serif",
+                  color: '#2D2D2D'
+                }}
+              >
+                {bio?.pitchTitle || 'Stories That Move Millions'}
+              </h3>
+              <p
+                className="text-base leading-loose"
+                style={{
+                  fontFamily: "'Inter', sans-serif",
+                  color: 'rgba(45, 45, 45, 0.7)',
+                  lineHeight: '2'
+                }}
+              >
+                {bio?.bioText || ''}
+              </p>
+
+              {/* Stats - elegant */}
+              <div className="mt-10 grid grid-cols-3 gap-6">
                 {[
-                  { label: 'Countries', value: '15+' },
-                  { label: 'Episodes', value: '100+' },
-                  { label: 'Followers', value: '50K+' }
+                  { label: 'Followers Grown', value: '54K+' },
+                  { label: 'Videos Produced', value: '200+' },
+                  { label: 'Months Active', value: '12+' }
                 ].map((stat) => (
-                  <div
+                  <motion.div
                     key={stat.label}
-                    className="text-center p-4 rounded-lg"
-                    style={{
-                      background: 'rgba(45, 45, 45, 0.02)',
-                      border: '1px solid rgba(45, 45, 45, 0.06)'
-                    }}
+                    initial={{ opacity: 0, y: 20 }}
+                    whileInView={{ opacity: 1, y: 0 }}
+                    viewport={{ once: true }}
+                    transition={{ delay: 0.3 }}
                   >
                     <div
                       className="text-2xl font-bold"
@@ -209,17 +276,59 @@ export default function About({ persona }: AboutProps) {
                       {stat.value}
                     </div>
                     <div
-                      className="text-xs mt-1"
-                      style={{ fontFamily: "'Inter', sans-serif", color: 'rgba(45, 45, 45, 0.5)' }}
+                      className="text-xs mt-1 tracking-wider uppercase"
+                      style={{ fontFamily: "'Inter', sans-serif", color: 'rgba(139, 115, 85, 0.7)' }}
                     >
                       {stat.label}
                     </div>
-                  </div>
+                  </motion.div>
                 ))}
               </div>
-            )}
-          </motion.div>
-        </div>
+            </motion.div>
+
+            {/* Expertise Columns */}
+            <div className="lg:col-span-7 space-y-8">
+              {creatorExpertise.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  className="p-8 rounded-xl"
+                  style={{
+                    background: 'rgba(255, 255, 255, 0.5)',
+                    backdropFilter: 'blur(10px)',
+                    border: '1px solid rgba(45, 45, 45, 0.04)'
+                  }}
+                  initial={{ opacity: 0, y: 30 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: i * 0.15, duration: 0.6 }}
+                >
+                  <div className="flex items-start gap-4">
+                    <span
+                      className="text-3xl font-bold opacity-20"
+                      style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
+                    >
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div>
+                      <h4
+                        className="text-xl font-bold mb-3"
+                        style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
+                      >
+                        {item.title}
+                      </h4>
+                      <p
+                        className="text-sm leading-relaxed"
+                        style={{ fontFamily: "'Inter', sans-serif", color: 'rgba(45, 45, 45, 0.6)', lineHeight: '1.8' }}
+                      >
+                        {item.description}
+                      </p>
+                    </div>
+                  </div>
+                </motion.div>
+              ))}
+            </div>
+          </div>
+        )}
       </div>
     </section>
   );

@@ -1,49 +1,61 @@
 import { useState, useEffect } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
+import { BrowserRouter, Routes, Route } from 'react-router-dom';
+import { AnimatePresence, motion } from 'framer-motion';
 import Header from './components/Header';
 import Welcome from './components/Welcome';
 import Projects from './components/Projects';
 import About from './components/About';
 import Testimonials from './components/Testimonials';
+import Footer from './components/Footer';
 import EngineerBackground from './components/EngineerBackground';
 import CreatorBackground from './components/CreatorBackground';
+import AdminAuth from './pages/admin/AuthPage';
+import AdminDashboard from './pages/admin/DashboardPage';
 
-function App() {
-  const [persona, setPersona] = useState<'engineer' | 'creator'>('engineer');
-  const [isTransitioning, setIsTransitioning] = useState(false);
-
-  const handleToggle = () => {
-    setIsTransitioning(true);
-    setTimeout(() => {
-      setPersona(prev => prev === 'engineer' ? 'creator' : 'engineer');
-      setTimeout(() => setIsTransitioning(false), 100);
-    }, 300);
+function PortfolioPage() {
+  // Check URL params for persona override (from admin preview links)
+  const getInitialPersona = (): 'engineer' | 'creator' => {
+    const params = new URLSearchParams(window.location.search);
+    const p = params.get('persona');
+    if (p === 'creator') return 'creator';
+    return 'engineer';
   };
 
-  // Update body class for theme-specific styling
+  const [persona, setPersona] = useState<'engineer' | 'creator'>(getInitialPersona);
+  const isEngineer = persona === 'engineer';
+
+  // Listen for messages from admin preview
   useEffect(() => {
-    document.body.className = persona === 'engineer' ? 'engineer-theme' : 'creator-theme';
-    document.body.style.backgroundColor = persona === 'engineer' ? '#0a0a0f' : '#FAF8F5';
-    document.body.style.transition = 'background-color 0.6s ease';
-  }, [persona]);
+    const handleMessage = (event: MessageEvent) => {
+      if (event.data?.type === 'SET_PERSONA') {
+        setPersona(event.data.persona);
+      }
+    };
+    window.addEventListener('message', handleMessage);
+    return () => window.removeEventListener('message', handleMessage);
+  }, []);
+
+  const togglePersona = () => {
+    setPersona(prev => prev === 'engineer' ? 'creator' : 'engineer');
+  };
 
   return (
     <div
-      className="relative min-h-screen overflow-x-hidden"
+      className={`relative min-h-screen transition-colors duration-700 ${isEngineer ? 'engineer-theme' : 'creator-theme'}`}
       style={{
-        background: persona === 'engineer' ? '#0a0a0f' : '#FAF8F5',
-        transition: 'background 0.6s ease'
+        background: isEngineer ? '#0a0a0f' : '#FAF8F5',
+        color: isEngineer ? '#00FF00' : '#2D2D2D'
       }}
     >
-      {/* Background Layer */}
+      {/* Background Animation */}
       <AnimatePresence mode="wait">
-        {persona === 'engineer' ? (
+        {isEngineer ? (
           <motion.div
             key="engineer-bg"
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
             <EngineerBackground />
           </motion.div>
@@ -53,42 +65,24 @@ function App() {
             initial={{ opacity: 0 }}
             animate={{ opacity: 1 }}
             exit={{ opacity: 0 }}
-            transition={{ duration: 0.6 }}
+            transition={{ duration: 0.5 }}
           >
             <CreatorBackground />
           </motion.div>
         )}
       </AnimatePresence>
 
-      {/* Transition overlay */}
-      <AnimatePresence>
-        {isTransitioning && (
-          <motion.div
-            className="fixed inset-0 z-[100] pointer-events-none"
-            style={{
-              background: persona === 'engineer'
-                ? 'radial-gradient(circle, rgba(0, 255, 0, 0.1), rgba(10, 10, 15, 0.9))'
-                : 'radial-gradient(circle, rgba(250, 248, 245, 0.8), rgba(250, 248, 245, 1))'
-            }}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.3 }}
-          />
-        )}
-      </AnimatePresence>
-
       {/* Header */}
-      <Header persona={persona} onToggle={handleToggle} />
+      <Header persona={persona} onToggle={togglePersona} />
 
       {/* Main Content */}
-      <main className="relative">
+      <main>
         <AnimatePresence mode="wait">
           <motion.div
             key={persona}
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -20 }}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
             transition={{ duration: 0.4 }}
           >
             <Welcome persona={persona} />
@@ -98,7 +92,22 @@ function App() {
           </motion.div>
         </AnimatePresence>
       </main>
+
+      {/* Footer */}
+      <Footer persona={persona} />
     </div>
+  );
+}
+
+function App() {
+  return (
+    <BrowserRouter>
+      <Routes>
+        <Route path="/" element={<PortfolioPage />} />
+        <Route path="/admin/auth" element={<AdminAuth />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
+      </Routes>
+    </BrowserRouter>
   );
 }
 

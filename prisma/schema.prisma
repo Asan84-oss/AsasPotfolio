@@ -1,0 +1,83 @@
+// Prisma Schema for Asa Samuel Bless Portfolio
+// ================================================
+// This schema maps to a serverless PostgreSQL database.
+// 
+// SETUP INSTRUCTIONS:
+// 1. Install Prisma: npm install prisma @prisma/client
+// 2. Set environment variable: POSTGRES_PRISMA_URL=your_neon_or_supabase_url
+// 3. Run: npx prisma db push
+// 4. Deploy to Vercel with the env variable attached
+//
+// The frontend currently uses localStorage as a mock database.
+// To connect to the real database, replace the localStorage calls
+// in src/data/mockData.ts with Prisma client queries via API routes.
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("POSTGRES_PRISMA_URL")
+  // Fallback for local development
+  // url   = env("DATABASE_URL")
+}
+
+model Admin {
+  id           String   @id @default(uuid())
+  email        String   @unique
+  password     String   // In production, use bcrypt hashing
+  isRegistered Boolean  @default(false)
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  @@map("admins")
+}
+
+model Project {
+  id          String   @id @default(uuid())
+  persona     String   // 'software_engineer' or 'content_creator'
+  name        String
+  imageUrl    String
+  projectUrl  String
+  description String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  @@map("projects")
+}
+
+model Testimonial {
+  id             String @id @default(uuid())
+  persona        String // 'software_engineer' or 'content_creator'
+  clientName     String
+  clientImageUrl String
+  reviewText     String
+  company        String
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  @@map("testimonials")
+}
+
+model Biography {
+  id         String @id @default(uuid())
+  persona    String // 'software_engineer' or 'content_creator'
+  pitchTitle String
+  bioText    String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@map("biographies")
+}
+
+model ActivityLog {
+  id               String   @id @default(uuid())
+  timestamp        DateTime @default(now())
+  targetSection    String
+  personaAffected  String
+  actionType       String   // 'CREATE', 'UPDATE', 'DELETE'
+  description      String
+
+  @@map("activity_logs")
+}
