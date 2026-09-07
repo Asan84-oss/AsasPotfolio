@@ -49,5 +49,5 @@ export const PERSONAL_DATA = {
   whatsapp: '+237 670713584',
   github: 'https://github.com/Asan84-oss',
   linkedin: 'https://www.linkedin.com/in/asa-bless-a48070415',
-  tiktok: ['@lordsprayer11', '@graceatwork07', 'glorious.god472'],
+  tiktok: ['@lordsprayer11', '@graceatwork07', '@glorious.god472'],
 };

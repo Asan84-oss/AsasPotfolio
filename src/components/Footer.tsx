@@ -156,7 +156,7 @@ export default function Footer({ persona }: FooterProps) {
                     color: isEngineer ? 'rgba(0, 255, 0, 0.5)' : 'rgba(45, 45, 45, 0.5)'
                   }}
                 >
-                  {isEngineer ? 'tiktok: @lordsprayer11' : 'TikTok: @lordsprayer11'}
+                  {isEngineer ? 'tiktok: @lordsprayer11-@graceatwork07-@glorious.god472' : 'TikTok: @lordsprayer11-@graceatwork07-@glorious.god472'}
                 </span>
               </li>
             </ul>

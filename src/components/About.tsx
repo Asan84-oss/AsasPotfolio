@@ -329,7 +329,7 @@ export default function About({ persona }: AboutProps) {
                   </div>
                   <div>
                     <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>TikTok</span>
-                    @lordsprayer11
+                    @lordsprayer11-@graceatwork07-@glorious.god472
                   </div>
                   <div>
                     <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>Location</span>
