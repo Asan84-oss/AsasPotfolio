@@ -4,8 +4,10 @@ export default function EngineerBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const mouseRef = useRef({ x: 0, y: 0 });
   const animationRef = useRef<number>(0);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -17,12 +19,10 @@ export default function EngineerBackground() {
     canvas.width = width;
     canvas.height = height;
 
-    // Grid parameters
     const gridSize = 50;
     const cols = Math.ceil(width / gridSize) + 2;
     const rows = Math.ceil(height / gridSize) + 2;
 
-    // Particles for matrix effect
     interface Particle {
       x: number;
       y: number;
@@ -47,6 +47,7 @@ export default function EngineerBackground() {
     }
 
     const handleResize = () => {
+      if (!mountedRef.current) return;
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
@@ -64,6 +65,7 @@ export default function EngineerBackground() {
     let time = 0;
 
     const animate = () => {
+      if (!mountedRef.current) return;
       time += 0.01;
       ctx.fillStyle = 'rgba(10, 10, 15, 0.15)';
       ctx.fillRect(0, 0, width, height);
@@ -72,16 +74,13 @@ export default function EngineerBackground() {
       const my = mouseRef.current.y;
 
       // Draw neon grid
-      ctx.strokeStyle = 'rgba(0, 255, 0, 0.08)';
-      ctx.lineWidth = 0.5;
-
       for (let i = 0; i < cols; i++) {
         ctx.beginPath();
+        ctx.strokeStyle = 'rgba(0, 255, 0, 0.08)';
+        ctx.lineWidth = 0.5;
         for (let j = 0; j < rows; j++) {
           const x = i * gridSize;
           const y = j * gridSize;
-
-          // Calculate distance from mouse
           const dx = x - mx;
           const dy = y - my;
           const dist = Math.sqrt(dx * dx + dy * dy);
@@ -91,11 +90,8 @@ export default function EngineerBackground() {
             const factor = 1 - dist / maxDist;
             const warpX = x + (dx / dist) * factor * 20 * Math.sin(time * 2 + i);
             const warpY = y + (dy / dist) * factor * 20 * Math.cos(time * 2 + j);
-
             if (j === 0) ctx.moveTo(warpX, warpY);
             else ctx.lineTo(warpX, warpY);
-
-            // Glow near cursor
             ctx.strokeStyle = `rgba(0, 255, 0, ${0.1 + factor * 0.4})`;
           } else {
             if (j === 0) ctx.moveTo(x, y);
@@ -105,10 +101,10 @@ export default function EngineerBackground() {
         ctx.stroke();
       }
 
-      // Horizontal grid lines
       for (let j = 0; j < rows; j++) {
         ctx.beginPath();
         ctx.strokeStyle = 'rgba(0, 255, 0, 0.06)';
+        ctx.lineWidth = 0.5;
         for (let i = 0; i < cols; i++) {
           const x = i * gridSize;
           const y = j * gridSize;
@@ -131,7 +127,7 @@ export default function EngineerBackground() {
         ctx.stroke();
       }
 
-      // Draw connection nodes at intersections near mouse
+      // Connection nodes near mouse
       for (let i = 0; i < cols; i++) {
         for (let j = 0; j < rows; j++) {
           const x = i * gridSize;
@@ -139,15 +135,12 @@ export default function EngineerBackground() {
           const dx = x - mx;
           const dy = y - my;
           const dist = Math.sqrt(dx * dx + dy * dy);
-
           if (dist < 200) {
             const factor = 1 - dist / 200;
             ctx.beginPath();
             ctx.arc(x, y, 2 + factor * 3, 0, Math.PI * 2);
             ctx.fillStyle = `rgba(0, 255, 0, ${factor * 0.8})`;
             ctx.fill();
-
-            // Pink accent for closest nodes
             if (dist < 80) {
               ctx.beginPath();
               ctx.arc(x, y, 1 + factor * 2, 0, Math.PI * 2);
@@ -158,7 +151,7 @@ export default function EngineerBackground() {
         }
       }
 
-      // Matrix rain particles
+      // Matrix rain
       particles.forEach(p => {
         p.y += p.speed;
         if (p.y > height) {
@@ -166,7 +159,6 @@ export default function EngineerBackground() {
           p.x = Math.random() * width;
           p.char = chars[Math.floor(Math.random() * chars.length)];
         }
-
         ctx.font = `${p.size}px 'Fira Code', monospace`;
         ctx.fillStyle = `rgba(0, 255, 0, ${p.opacity * 0.3})`;
         ctx.fillText(p.char, p.x, p.y);
@@ -186,9 +178,14 @@ export default function EngineerBackground() {
     animate();
 
     return () => {
+      mountedRef.current = false;
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', handleResize);
       window.removeEventListener('mousemove', handleMouseMove);
+      // Clear canvas on unmount to prevent stale references
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, width, height);
+      }
     };
   }, []);
 

@@ -13,7 +13,6 @@ import AdminAuth from './pages/admin/AuthPage';
 import AdminDashboard from './pages/admin/DashboardPage';
 
 function PortfolioPage() {
-  // Check URL params for persona override (from admin preview links)
   const getInitialPersona = (): 'engineer' | 'creator' => {
     const params = new URLSearchParams(window.location.search);
     const p = params.get('persona');
@@ -24,7 +23,6 @@ function PortfolioPage() {
   const [persona, setPersona] = useState<'engineer' | 'creator'>(getInitialPersona);
   const isEngineer = persona === 'engineer';
 
-  // Listen for messages from admin preview
   useEffect(() => {
     const handleMessage = (event: MessageEvent) => {
       if (event.data?.type === 'SET_PERSONA') {
@@ -40,66 +38,50 @@ function PortfolioPage() {
   };
 
   return (
-    <div
-      className={`relative min-h-screen transition-colors duration-700 ${isEngineer ? 'engineer-theme' : 'creator-theme'}`}
-      style={{
-        background: isEngineer ? '#0a0a0f' : '#FAF8F5',
-        color: isEngineer ? '#00FF00' : '#2D2D2D'
-      }}
-    >
-      {/* Background Animation */}
-      <AnimatePresence mode="wait">
-        {isEngineer ? (
-          <motion.div
-            key="engineer-bg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <EngineerBackground />
-          </motion.div>
-        ) : (
-          <motion.div
-            key="creator-bg"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.5 }}
-          >
-            <CreatorBackground />
-          </motion.div>
-        )}
-      </AnimatePresence>
-
-      {/* Header */}
-      <Header persona={persona} onToggle={togglePersona} />
-
-      {/* Main Content */}
-      <main>
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={persona}
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.4 }}
-          >
+    <>
+      {/* 
+        FIX: Each theme gets a completely distinct keyed container.
+        This forces React to fully unmount/remount the DOM subtree 
+        rather than trying to diff and patch mismatched canvas nodes.
+      */}
+      {isEngineer ? (
+        <div
+          key="theme-cyberpunk-eng"
+          className="relative min-h-screen transition-colors duration-700 engineer-theme"
+          style={{ background: '#0a0a0f', color: '#00FF00' }}
+        >
+          <EngineerBackground />
+          <Header persona={persona} onToggle={togglePersona} />
+          <main>
             <Welcome persona={persona} />
             <Projects persona={persona} />
             <About persona={persona} />
             <Testimonials persona={persona} />
-          </motion.div>
-        </AnimatePresence>
-      </main>
-
-      {/* Footer */}
-      <Footer persona={persona} />
-    </div>
+          </main>
+          <Footer persona={persona} />
+        </div>
+      ) : (
+        <div
+          key="theme-editorial-creat"
+          className="relative min-h-screen transition-colors duration-700 creator-theme"
+          style={{ background: '#FAF8F5', color: '#2D2D2D' }}
+        >
+          <CreatorBackground />
+          <Header persona={persona} onToggle={togglePersona} />
+          <main>
+            <Welcome persona={persona} />
+            <Projects persona={persona} />
+            <About persona={persona} />
+            <Testimonials persona={persona} />
+          </main>
+          <Footer persona={persona} />
+        </div>
+      )}
+    </>
   );
 }
 
-function App() {
+export default function App() {
   return (
     <BrowserRouter>
       <Routes>
@@ -110,5 +92,3 @@ function App() {
     </BrowserRouter>
   );
 }
-
-export default App;

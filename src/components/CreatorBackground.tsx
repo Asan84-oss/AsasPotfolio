@@ -3,8 +3,10 @@ import { useEffect, useRef } from 'react';
 export default function CreatorBackground() {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const animationRef = useRef<number>(0);
+  const mountedRef = useRef(true);
 
   useEffect(() => {
+    mountedRef.current = true;
     const canvas = canvasRef.current;
     if (!canvas) return;
 
@@ -28,34 +30,15 @@ export default function CreatorBackground() {
     }
 
     const blobs: Blob[] = [
-      {
-        x: width * 0.2, y: height * 0.3, radius: 300,
-        color: 'rgba(210, 180, 140, 0.15)',
-        speedX: 0.3, speedY: 0.2, phase: 0, phaseSpeed: 0.005
-      },
-      {
-        x: width * 0.7, y: height * 0.6, radius: 250,
-        color: 'rgba(180, 160, 200, 0.12)',
-        speedX: -0.2, speedY: 0.3, phase: 2, phaseSpeed: 0.007
-      },
-      {
-        x: width * 0.5, y: height * 0.2, radius: 200,
-        color: 'rgba(200, 190, 170, 0.1)',
-        speedX: 0.15, speedY: -0.25, phase: 4, phaseSpeed: 0.004
-      },
-      {
-        x: width * 0.8, y: height * 0.8, radius: 280,
-        color: 'rgba(190, 170, 150, 0.13)',
-        speedX: -0.25, speedY: -0.15, phase: 1, phaseSpeed: 0.006
-      },
-      {
-        x: width * 0.3, y: height * 0.7, radius: 220,
-        color: 'rgba(220, 200, 180, 0.11)',
-        speedX: 0.2, speedY: 0.1, phase: 3, phaseSpeed: 0.008
-      }
+      { x: width * 0.2, y: height * 0.3, radius: 300, color: 'rgba(210, 180, 140, 0.15)', speedX: 0.3, speedY: 0.2, phase: 0, phaseSpeed: 0.005 },
+      { x: width * 0.7, y: height * 0.6, radius: 250, color: 'rgba(180, 160, 200, 0.12)', speedX: -0.2, speedY: 0.3, phase: 2, phaseSpeed: 0.007 },
+      { x: width * 0.5, y: height * 0.2, radius: 200, color: 'rgba(200, 190, 170, 0.1)', speedX: 0.15, speedY: -0.25, phase: 4, phaseSpeed: 0.004 },
+      { x: width * 0.8, y: height * 0.8, radius: 280, color: 'rgba(190, 170, 150, 0.13)', speedX: -0.25, speedY: -0.15, phase: 1, phaseSpeed: 0.006 },
+      { x: width * 0.3, y: height * 0.7, radius: 220, color: 'rgba(220, 200, 180, 0.11)', speedX: 0.2, speedY: 0.1, phase: 3, phaseSpeed: 0.008 }
     ];
 
     const handleResize = () => {
+      if (!mountedRef.current) return;
       width = window.innerWidth;
       height = window.innerHeight;
       canvas.width = width;
@@ -91,10 +74,7 @@ export default function CreatorBackground() {
       }
       ctx.closePath();
 
-      const gradient = ctx.createRadialGradient(
-        blob.x, blob.y, 0,
-        blob.x, blob.y, blob.radius
-      );
+      const gradient = ctx.createRadialGradient(blob.x, blob.y, 0, blob.x, blob.y, blob.radius);
       gradient.addColorStop(0, blob.color);
       gradient.addColorStop(1, 'rgba(250, 248, 245, 0)');
       ctx.fillStyle = gradient;
@@ -102,19 +82,17 @@ export default function CreatorBackground() {
     };
 
     const animate = () => {
+      if (!mountedRef.current) return;
       time += 0.016;
 
-      // Clear with cream background
       ctx.fillStyle = '#FAF8F5';
       ctx.fillRect(0, 0, width, height);
 
-      // Update and draw blobs
       blobs.forEach(blob => {
         blob.x += blob.speedX;
         blob.y += blob.speedY;
         blob.phase += blob.phaseSpeed;
 
-        // Bounce off edges softly
         if (blob.x < -blob.radius) blob.x = width + blob.radius;
         if (blob.x > width + blob.radius) blob.x = -blob.radius;
         if (blob.y < -blob.radius) blob.y = height + blob.radius;
@@ -123,7 +101,7 @@ export default function CreatorBackground() {
         drawBlob(blob);
       });
 
-      // Subtle noise texture overlay
+      // Subtle noise texture
       ctx.globalAlpha = 0.02;
       for (let i = 0; i < 1000; i++) {
         const x = Math.random() * width;
@@ -139,8 +117,12 @@ export default function CreatorBackground() {
     animate();
 
     return () => {
+      mountedRef.current = false;
       cancelAnimationFrame(animationRef.current);
       window.removeEventListener('resize', handleResize);
+      if (canvas && ctx) {
+        ctx.clearRect(0, 0, width, height);
+      }
     };
   }, []);
 
