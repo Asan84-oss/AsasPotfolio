@@ -1,44 +1,21 @@
 import { motion } from 'framer-motion';
-import { getBiographies } from '../data/mockData';
 
 interface AboutProps {
   persona: 'engineer' | 'creator';
 }
 
-const engineerSkills = [
-  { category: 'Backend', items: ['Node.js', 'PHP', 'Python', 'PostgreSQL'] },
-  { category: 'Frontend', items: ['React', 'TypeScript', 'Next.js', 'Tailwind CSS'] },
-  { category: 'AI/ML', items: ['DeepSeek', 'Qwen', 'Gemini', 'LangChain'] },
-  { category: 'DevOps', items: ['Docker', 'Vercel', 'AWS', 'CI/CD'] },
-];
-
-const engineerRules = [
-  'Write clean, documented, testable code',
-  'Prioritize system reliability over speed',
-  'Design for scale from day one',
-  'Automate repetitive workflows',
-  'Security-first architecture decisions',
-];
-
-const creatorExpertise = [
-  {
-    title: 'Media Production',
-    description: 'Advanced proficiency in CapCut, DaVinci Resolve, and Adobe Creative Suite. Specializing in short-form video optimization for TikTok, Instagram Reels, and YouTube Shorts.'
-  },
-  {
-    title: 'Content Strategy',
-    description: 'Data-driven content calendars, algorithmic trend analysis, audience growth frameworks, and cross-platform repurposing systems that maximize organic reach.'
-  },
-  {
-    title: 'Creative Execution',
-    description: 'From concept to viral delivery — hook engineering, visual storytelling, brand voice translation, and community engagement protocols that build loyal audiences.'
-  }
-];
-
 export default function About({ persona }: AboutProps) {
   const isEngineer = persona === 'engineer';
-  const bios = getBiographies();
-  const bio = bios.find(b => b.persona === (isEngineer ? 'software_engineer' : 'content_creator'));
+
+  const engineerSkills = [
+    'Node.js', 'PHP', 'React', 'Python', 'DeepSeek', 'Qwen', 'Gemini',
+    'PostgreSQL', 'Docker', 'AWS', 'TypeScript', 'Next.js', 'Prisma'
+  ];
+
+  const creatorSkills = [
+    'CapCut', 'Adobe Premiere', 'TikTok Algorithm', 'Content Strategy',
+    'Video Editing', 'Trend Analysis', 'Brand Storytelling', 'Analytics'
+  ];
 
   return (
     <section
@@ -62,7 +39,7 @@ export default function About({ persona }: AboutProps) {
               color: isEngineer ? '#FF006E' : '#8B7355'
             }}
           >
-            {isEngineer ? '// System Profile' : 'About'}
+            {isEngineer ? '// About.sys' : 'About'}
           </span>
           <h2
             className="text-4xl md:text-5xl font-bold"
@@ -72,19 +49,19 @@ export default function About({ persona }: AboutProps) {
               textShadow: isEngineer ? '0 0 20px rgba(0, 255, 0, 0.2)' : 'none'
             }}
           >
-            {isEngineer ? 'about.config()' : 'The Story'}
+            {isEngineer ? 'whoami --verbose' : 'The Story'}
           </h2>
         </motion.div>
 
         {isEngineer ? (
-          /* ENGINEER MODE: Dashboard Layout */
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-            {/* Bio Panel */}
+          /* ── ENGINEER: Dashboard Layout ── */
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Profile Card */}
             <motion.div
-              className="lg:col-span-2 p-6 rounded-xl"
+              className="lg:col-span-1 p-8 rounded-xl"
               style={{
-                background: 'rgba(10, 10, 15, 0.7)',
-                border: '1px solid rgba(0, 255, 0, 0.12)',
+                background: 'rgba(10, 10, 15, 0.8)',
+                border: '1px solid rgba(0, 255, 0, 0.15)',
                 backdropFilter: 'blur(10px)'
               }}
               initial={{ opacity: 0, x: -30 }}
@@ -92,241 +69,275 @@ export default function About({ persona }: AboutProps) {
               viewport={{ once: true }}
               transition={{ duration: 0.6 }}
             >
-              <div className="flex items-center gap-2 mb-4 pb-3" style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.1)' }}>
-                <span className="w-2 h-2 rounded-full" style={{ background: '#00FF00', boxShadow: '0 0 6px rgba(0,255,0,0.5)' }} />
-                <span
-                  className="text-xs"
-                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.5)' }}
+              <div className="mb-6">
+                <div
+                  className="w-20 h-20 rounded-lg mb-4 flex items-center justify-center text-3xl"
+                  style={{
+                    background: 'rgba(0, 255, 0, 0.1)',
+                    border: '1px solid rgba(0, 255, 0, 0.3)'
+                  }}
                 >
-                  profile.json
-                </span>
+                  👨‍💻
+                </div>
+                <h3 className="text-lg font-bold" style={{ color: '#00FF00', fontFamily: "'Fira Code', monospace" }}>
+                  Asa Samuel Bless
+                </h3>
+                <p className="text-xs mt-1" style={{ color: 'rgba(0, 255, 0, 0.5)', fontFamily: "'Fira Code', monospace" }}>
+                  Software Engineer
+                </p>
+                <p className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.3)', fontFamily: "'Fira Code', monospace" }}>
+                  Douala, Cameroon 🇨🇲
+                </p>
               </div>
-              <h3
-                className="text-lg font-bold mb-3"
-                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-              >
-                {bio?.pitchTitle || 'Engineering Systems That Scale'}
-              </h3>
-              <p
-                className="text-sm leading-relaxed"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.55)', fontSize: '12px' }}
-              >
-                {bio?.bioText || ''}
-              </p>
 
-              {/* Stats */}
-              <div className="grid grid-cols-3 gap-4 mt-6 pt-4" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.08)' }}>
-                {[
-                  { label: 'Years Exp', value: '3+' },
-                  { label: 'Projects', value: '15+' },
-                  { label: 'Uptime', value: '99.9%' }
-                ].map((stat) => (
-                  <div key={stat.label} className="text-center">
-                    <div
-                      className="text-xl font-bold"
-                      style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
-                    >
-                      {stat.value}
-                    </div>
-                    <div
-                      className="text-[10px] mt-1"
-                      style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-                    >
-                      {stat.label}
-                    </div>
-                  </div>
-                ))}
+              <div className="space-y-3">
+                <div className="flex items-center gap-2">
+                  <span style={{ color: '#FF006E' }}>→</span>
+                  <span className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace" }}>
+                    asa746090@gmail.com
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: '#FF006E' }}>→</span>
+                  <span className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace" }}>
+                    +237 670 713 584
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <span style={{ color: '#FF006E' }}>→</span>
+                  <span className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace" }}>
+                    github.com/Asan84-oss
+                  </span>
+                </div>
               </div>
             </motion.div>
 
-            {/* Working Rules Panel */}
+            {/* Tech Stack & Bio */}
             <motion.div
-              className="p-6 rounded-xl"
-              style={{
-                background: 'rgba(10, 10, 15, 0.7)',
-                border: '1px solid rgba(255, 0, 110, 0.12)',
-                backdropFilter: 'blur(10px)'
-              }}
+              className="lg:col-span-2 space-y-8"
               initial={{ opacity: 0, x: 30 }}
               whileInView={{ opacity: 1, x: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.6, delay: 0.2 }}
             >
-              <h3
-                className="text-sm font-bold mb-4"
-                style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
+              {/* Bio */}
+              <div
+                className="p-6 rounded-xl"
+                style={{
+                  background: 'rgba(10, 10, 15, 0.6)',
+                  border: '1px solid rgba(0, 255, 0, 0.1)'
+                }}
               >
-                {'// Working Rules'}
-              </h3>
-              <ul className="space-y-3">
-                {engineerRules.map((rule, i) => (
-                  <li key={i} className="flex items-start gap-2">
-                    <span style={{ color: '#00FF00', fontFamily: "'Fira Code', monospace", fontSize: '10px' }}>
-                      [{String(i + 1).padStart(2, '0')}]
-                    </span>
-                    <span
-                      className="text-xs"
-                      style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.5)' }}
-                    >
-                      {rule}
-                    </span>
-                  </li>
-                ))}
-              </ul>
-            </motion.div>
+                <h4 className="text-xs font-bold mb-4" style={{ color: '#FF006E', fontFamily: "'Fira Code', monospace" }}>
+                  // BIOGRAPHY
+                </h4>
+                <p className="text-sm leading-relaxed" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace", fontSize: '12px' }}>
+                  Bilingual Software Engineer based in Douala, Cameroon. Specializing in full-stack web applications, autonomous AI coding agents, and robust transactional architectures. I build systems that eliminate bottlenecks and scale seamlessly — from UBA Bank's complaint tracking infrastructure to voice-cloned AI assistants streaming over WhatsApp.
+                </p>
+              </div>
 
-            {/* Tech Stack Panel */}
-            <motion.div
-              className="lg:col-span-3 p-6 rounded-xl"
-              style={{
-                background: 'rgba(10, 10, 15, 0.7)',
-                border: '1px solid rgba(0, 255, 0, 0.12)',
-                backdropFilter: 'blur(10px)'
-              }}
-              initial={{ opacity: 0, y: 30 }}
-              whileInView={{ opacity: 1, y: 0 }}
-              viewport={{ once: true }}
-              transition={{ duration: 0.6, delay: 0.3 }}
-            >
-              <h3
-                className="text-sm font-bold mb-6"
-                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
+              {/* Tech Stack */}
+              <div
+                className="p-6 rounded-xl"
+                style={{
+                  background: 'rgba(10, 10, 15, 0.6)',
+                  border: '1px solid rgba(0, 255, 0, 0.1)'
+                }}
               >
-                {'// Tech Stack'}
-              </h3>
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-6">
-                {engineerSkills.map((category) => (
-                  <div key={category.category}>
-                    <h4
-                      className="text-xs font-bold mb-3"
-                      style={{ fontFamily: "'Fira Code', monospace", color: '#FF006E' }}
+                <h4 className="text-xs font-bold mb-4" style={{ color: '#FF006E', fontFamily: "'Fira Code', monospace" }}>
+                  // TECH_STACK
+                </h4>
+                <div className="flex flex-wrap gap-2">
+                  {engineerSkills.map((skill, i) => (
+                    <motion.span
+                      key={skill}
+                      className="px-3 py-1.5 rounded text-xs"
+                      style={{
+                        background: 'rgba(0, 255, 0, 0.05)',
+                        border: '1px solid rgba(0, 255, 0, 0.2)',
+                        color: '#00FF00',
+                        fontFamily: "'Fira Code', monospace"
+                      }}
+                      initial={{ opacity: 0, scale: 0.8 }}
+                      whileInView={{ opacity: 1, scale: 1 }}
+                      viewport={{ once: true }}
+                      transition={{ delay: i * 0.05 }}
+                      whileHover={{
+                        background: 'rgba(0, 255, 0, 0.15)',
+                        boxShadow: '0 0 15px rgba(0, 255, 0, 0.2)'
+                      }}
                     >
-                      {category.category}
-                    </h4>
-                    <div className="flex flex-wrap gap-2">
-                      {category.items.map((skill) => (
-                        <span
-                          key={skill}
-                          className="px-2 py-1 rounded text-[10px]"
-                          style={{
-                            fontFamily: "'Fira Code', monospace",
-                            background: 'rgba(0, 255, 0, 0.05)',
-                            border: '1px solid rgba(0, 255, 0, 0.15)',
-                            color: 'rgba(0, 255, 0, 0.7)'
-                          }}
-                        >
-                          {skill}
-                        </span>
-                      ))}
-                    </div>
-                  </div>
-                ))}
+                      {skill}
+                    </motion.span>
+                  ))}
+                </div>
+              </div>
+
+              {/* Working Rules */}
+              <div
+                className="p-6 rounded-xl"
+                style={{
+                  background: 'rgba(10, 10, 15, 0.6)',
+                  border: '1px solid rgba(0, 255, 0, 0.1)'
+                }}
+              >
+                <h4 className="text-xs font-bold mb-4" style={{ color: '#FF006E', fontFamily: "'Fira Code', monospace" }}>
+                  // WORKING_RULES
+                </h4>
+                <ul className="space-y-2">
+                  {[
+                    'Clean, documented, maintainable code',
+                    'Test-driven development where applicable',
+                    'Performance-first architecture decisions',
+                    'Continuous learning and adaptation',
+                    'Open communication and transparent timelines'
+                  ].map((rule, i) => (
+                    <li key={i} className="flex items-start gap-2">
+                      <span style={{ color: '#00FF00' }} className="text-xs mt-0.5">[{i + 1}]</span>
+                      <span className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.5)', fontFamily: "'Fira Code', monospace" }}>
+                        {rule}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
               </div>
             </motion.div>
           </div>
         ) : (
-          /* CREATOR MODE: Editorial Multi-Column Layout */
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-12">
-            {/* Bio Narrative */}
+          /* ── CREATOR: Editorial Layout ── */
+          <div className="max-w-4xl mx-auto">
             <motion.div
-              className="lg:col-span-5"
-              initial={{ opacity: 0, x: -30 }}
-              whileInView={{ opacity: 1, x: 0 }}
+              className="space-y-16"
+              initial={{ opacity: 0, y: 30 }}
+              whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8 }}
             >
-              <h3
-                className="text-3xl font-bold mb-6"
-                style={{
-                  fontFamily: "'Playfair Display', serif",
-                  color: '#2D2D2D'
-                }}
-              >
-                {bio?.pitchTitle || 'Stories That Move Millions'}
-              </h3>
-              <p
-                className="text-base leading-loose"
-                style={{
-                  fontFamily: "'Inter', sans-serif",
-                  color: 'rgba(45, 45, 45, 0.7)',
-                  lineHeight: '2'
-                }}
-              >
-                {bio?.bioText || ''}
-              </p>
-
-              {/* Stats - elegant */}
-              <div className="mt-10 grid grid-cols-3 gap-6">
-                {[
-                  { label: 'Followers Grown', value: '54K+' },
-                  { label: 'Videos Produced', value: '200+' },
-                  { label: 'Months Active', value: '12+' }
-                ].map((stat) => (
-                  <motion.div
-                    key={stat.label}
-                    initial={{ opacity: 0, y: 20 }}
-                    whileInView={{ opacity: 1, y: 0 }}
-                    viewport={{ once: true }}
-                    transition={{ delay: 0.3 }}
-                  >
-                    <div
-                      className="text-2xl font-bold"
-                      style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
-                    >
-                      {stat.value}
-                    </div>
-                    <div
-                      className="text-xs mt-1 tracking-wider uppercase"
-                      style={{ fontFamily: "'Inter', sans-serif", color: 'rgba(139, 115, 85, 0.7)' }}
-                    >
-                      {stat.label}
-                    </div>
-                  </motion.div>
-                ))}
-              </div>
-            </motion.div>
-
-            {/* Expertise Columns */}
-            <div className="lg:col-span-7 space-y-8">
-              {creatorExpertise.map((item, i) => (
-                <motion.div
-                  key={item.title}
-                  className="p-8 rounded-xl"
+              {/* Bio */}
+              <div>
+                <p
+                  className="text-lg md:text-xl leading-relaxed"
                   style={{
-                    background: 'rgba(255, 255, 255, 0.5)',
-                    backdropFilter: 'blur(10px)',
-                    border: '1px solid rgba(45, 45, 45, 0.04)'
+                    fontFamily: "'Playfair Display', serif",
+                    color: '#2D2D2D',
+                    lineHeight: '1.8'
                   }}
-                  initial={{ opacity: 0, y: 30 }}
+                >
+                  I'm Asa Samuel Bless, a bilingual digital marketer and content creator based in Douala, Cameroon. My work lives at the intersection of algorithmic strategy and authentic storytelling — turning brand messages into viral short-form video assets that resonate with millions.
+                </p>
+              </div>
+
+              {/* Multi-column expertise */}
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-12">
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
                   whileInView={{ opacity: 1, y: 0 }}
                   viewport={{ once: true }}
-                  transition={{ delay: i * 0.15, duration: 0.6 }}
+                  transition={{ delay: 0.2 }}
                 >
-                  <div className="flex items-start gap-4">
-                    <span
-                      className="text-3xl font-bold opacity-20"
-                      style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
-                    >
-                      {String(i + 1).padStart(2, '0')}
-                    </span>
-                    <div>
-                      <h4
-                        className="text-xl font-bold mb-3"
-                        style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
-                      >
-                        {item.title}
-                      </h4>
-                      <p
-                        className="text-sm leading-relaxed"
-                        style={{ fontFamily: "'Inter', sans-serif", color: 'rgba(45, 45, 45, 0.6)', lineHeight: '1.8' }}
-                      >
-                        {item.description}
-                      </p>
-                    </div>
-                  </div>
+                  <span className="text-xs tracking-[0.2em] uppercase" style={{ color: '#8B7355' }}>01</span>
+                  <h3
+                    className="text-xl font-bold mt-2 mb-4"
+                    style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
+                  >
+                    Media Production
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(45, 45, 45, 0.6)', fontFamily: "'Inter', sans-serif" }}>
+                    Advanced video editing with CapCut and professional suites. Clean visual storytelling that captures attention in the first frame and holds it through the final second.
+                  </p>
                 </motion.div>
-              ))}
-            </div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.4 }}
+                >
+                  <span className="text-xs tracking-[0.2em] uppercase" style={{ color: '#8B7355' }}>02</span>
+                  <h3
+                    className="text-xl font-bold mt-2 mb-4"
+                    style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
+                  >
+                    Content Strategy
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(45, 45, 45, 0.6)', fontFamily: "'Inter', sans-serif" }}>
+                    Deep understanding of TikTok's algorithm, trend-jacking frameworks, and organic growth mechanics. Proven ability to scale communities from zero to 50K+ followers.
+                  </p>
+                </motion.div>
+
+                <motion.div
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ delay: 0.6 }}
+                >
+                  <span className="text-xs tracking-[0.2em] uppercase" style={{ color: '#8B7355' }}>03</span>
+                  <h3
+                    className="text-xl font-bold mt-2 mb-4"
+                    style={{ fontFamily: "'Playfair Display', serif", color: '#2D2D2D' }}
+                  >
+                    Creative Execution
+                  </h3>
+                  <p className="text-sm leading-relaxed" style={{ color: 'rgba(45, 45, 45, 0.6)', fontFamily: "'Inter', sans-serif" }}>
+                    Translating brand visions into scroll-stopping content. Every frame intentional, every transition purposeful, every hook engineered for maximum retention.
+                  </p>
+                </motion.div>
+              </div>
+
+              {/* Skills */}
+              <motion.div
+                initial={{ opacity: 0, y: 20 }}
+                whileInView={{ opacity: 1, y: 0 }}
+                viewport={{ once: true }}
+                transition={{ delay: 0.8 }}
+              >
+                <div className="flex flex-wrap gap-3">
+                  {creatorSkills.map((skill) => (
+                    <span
+                      key={skill}
+                      className="px-4 py-2 rounded-full text-xs tracking-wider"
+                      style={{
+                        background: 'rgba(45, 45, 45, 0.04)',
+                        border: '1px solid rgba(45, 45, 45, 0.08)',
+                        color: 'rgba(45, 45, 45, 0.6)',
+                        fontFamily: "'Inter', sans-serif"
+                      }}
+                    >
+                      {skill}
+                    </span>
+                  ))}
+                </div>
+              </motion.div>
+
+              {/* Contact */}
+              <motion.div
+                className="pt-8"
+                style={{ borderTop: '1px solid rgba(45, 45, 45, 0.08)' }}
+                initial={{ opacity: 0 }}
+                whileInView={{ opacity: 1 }}
+                viewport={{ once: true }}
+                transition={{ delay: 1 }}
+              >
+                <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-xs" style={{ color: 'rgba(45, 45, 45, 0.5)' }}>
+                  <div>
+                    <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>Email</span>
+                    asa746090@gmail.com
+                  </div>
+                  <div>
+                    <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>WhatsApp</span>
+                    +237 670 713 584
+                  </div>
+                  <div>
+                    <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>TikTok</span>
+                    @lordsprayer11
+                  </div>
+                  <div>
+                    <span className="block text-[10px] tracking-wider uppercase mb-1" style={{ color: '#8B7355' }}>Location</span>
+                    Douala, Cameroon
+                  </div>
+                </div>
+              </motion.div>
+            </motion.div>
           </div>
         )}
       </div>

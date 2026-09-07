@@ -1,51 +1,46 @@
 /**
- * Authentication Middleware
+ * AUTH MIDDLEWARE
  * 
- * In Next.js: This would be src/middleware.ts running on the edge
- * In this Vite/React setup: This runs client-side to guard routes
+ * In production (Next.js on Vercel):
+ *   This would be src/middleware.ts using Next.js middleware API
+ *   to protect /admin/dashboard/* routes with JWT validation.
  * 
- * Protects /admin/dashboard from unauthorized access
+ * In this Vite SPA:
+ *   This module exports a checkAuth function used by the
+ *   admin dashboard component to gate access.
  */
 
 import db from './lib/db';
 
-export interface MiddlewareResult {
-  allowed: boolean;
-  redirectTo?: string;
+/**
+ * Check if the current user is authenticated.
+ * Returns true if a valid auth token exists in localStorage.
+ */
+export function checkAuth(): boolean {
+  return db.auth.isAuthenticated();
 }
 
 /**
- * Check if user is authenticated before accessing admin routes
+ * Get the current admin's email from the token.
+ * In production, this would decode the JWT.
  */
-export function checkAuth(): MiddlewareResult {
-  const isAuthenticated = db.auth.isAuthenticated();
+export function getCurrentAdmin(): string | null {
+  const token = db.auth.getToken();
+  if (!token) return null;
   
-  if (!isAuthenticated) {
-    return {
-      allowed: false,
-      redirectTo: '/admin/auth'
-    };
-  }
-
-  return { allowed: true };
-}
-
-/**
- * Check if admin account exists (for registration gating)
- */
-export function checkAdminExists(): boolean {
-  const admin = db.admin.get();
-  return admin !== null && admin.isRegistered === true;
-}
-
-/**
- * Protect a route — redirect if not authenticated
- */
-export function protectRoute(): void {
-  const result = checkAuth();
-  if (!result.allowed && result.redirectTo) {
-    window.location.href = result.redirectTo;
+  try {
+    const decoded = atob(token);
+    const email = decoded.split(':')[0];
+    return email || null;
+  } catch {
+    return null;
   }
 }
 
-export default { checkAuth, checkAdminExists, protectRoute };
+/**
+ * Middleware configuration for Next.js production deployment.
+ * This object would be used in a real Next.js middleware.ts file.
+ */
+export const config = {
+  matcher: ['/admin/dashboard/:path*'],
+};

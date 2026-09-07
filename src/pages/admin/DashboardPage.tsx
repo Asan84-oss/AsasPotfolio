@@ -1,114 +1,140 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, AnimatePresence } from 'framer-motion';
-import db, { Project, Testimonial, Biography, ActivityLog } from '../../lib/db';
-import { checkAuth } from '../../middleware';
+import db from '../../lib/db';
+import type { Project, Testimonial, Biography, ActivityLog } from '../../data/mockData';
 
 type Tab = 'home' | 'workspace';
+type Persona = 'software_engineer' | 'content_creator';
 
 export default function AdminDashboard() {
   const navigate = useNavigate();
-  const [activeTab, setActiveTab] = useState<Tab>('home');
   const [sidebarOpen, setSidebarOpen] = useState(true);
-
-  // Data states
-  const [activityLogs, setActivityLogs] = useState<ActivityLog[]>([]);
+  const [activeTab, setActiveTab] = useState<Tab>('home');
   const [projects, setProjects] = useState<Project[]>([]);
   const [testimonials, setTestimonials] = useState<Testimonial[]>([]);
   const [biographies, setBiographies] = useState<Biography[]>([]);
+  const [activityLog, setActivityLog] = useState<ActivityLog[]>([]);
 
-  // Form states
-  const [newProject, setNewProject] = useState({
-    persona: 'software_engineer' as const,
-    name: '', imageUrl: '', projectUrl: '', description: ''
-  });
-  const [newTestimonial, setNewTestimonial] = useState({
-    persona: 'software_engineer' as const,
-    clientName: '', clientImageUrl: '', reviewText: '', company: ''
-  });
-  const [editingBio, setEditingBio] = useState<{ [key: string]: { pitchTitle: string; bioText: string } }>({});
+  // Project form state
+  const [newProjectName, setNewProjectName] = useState('');
+  const [newProjectImage, setNewProjectImage] = useState('');
+  const [newProjectUrl, setNewProjectUrl] = useState('');
+  const [newProjectDesc, setNewProjectDesc] = useState('');
+  const [newProjectPersona, setNewProjectPersona] = useState<Persona>('software_engineer');
 
-  // Auth guard
+  // Testimonial form state
+  const [newTestName, setNewTestName] = useState('');
+  const [newTestCompany, setNewTestCompany] = useState('');
+  const [newTestImage, setNewTestImage] = useState('');
+  const [newTestReview, setNewTestReview] = useState('');
+  const [newTestPersona, setNewTestPersona] = useState<Persona>('software_engineer');
+
+  // Biography form state
+  const [editBioPersona, setEditBioPersona] = useState<Persona>('software_engineer');
+  const [editBioTitle, setEditBioTitle] = useState('');
+  const [editBioText, setEditBioText] = useState('');
+
   useEffect(() => {
-    const result = checkAuth();
-    if (!result.allowed) {
+    // Check auth
+    if (!db.auth.isAuthenticated()) {
       navigate('/admin/auth');
+      return;
     }
+    loadData();
   }, [navigate]);
 
-  // Load data
-  useEffect(() => {
-    refreshData();
-  }, []);
-
-  const refreshData = () => {
-    setActivityLogs(db.activityLog.getAll());
+  const loadData = () => {
     setProjects(db.projects.getAll());
     setTestimonials(db.testimonials.getAll());
-    const bios = db.biographies.getAll();
-    setBiographies(bios);
-    const editState: typeof editingBio = {};
-    bios.forEach(b => {
-      editState[b.persona] = { pitchTitle: b.pitchTitle, bioText: b.bioText };
-    });
-    setEditingBio(editState);
+    setBiographies(db.biographies.getAll());
+    setActivityLog(db.activityLog.getAll());
   };
 
   const handleLogout = () => {
-    db.auth.clearToken();
     db.activityLog.create({
-      targetSection: 'Authentication',
+      targetSection: 'Auth',
       personaAffected: 'system',
       actionType: 'DELETE',
-      description: 'Admin logged out'
+      description: 'Admin logged out',
     });
+    db.auth.clearToken();
     navigate('/');
   };
 
-  const handleAddProject = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newProject.name || !newProject.description) return;
-    db.projects.create(newProject);
-    setNewProject({ persona: 'software_engineer', name: '', imageUrl: '', projectUrl: '', description: '' });
-    refreshData();
+  // ── PROJECT CRUD ──
+  const handleCreateProject = () => {
+    if (!newProjectName || !newProjectDesc) return;
+    db.projects.create({
+      persona: newProjectPersona,
+      name: newProjectName,
+      imageUrl: newProjectImage || 'https://images.unsplash.com/photo-1461749280684-dccba630e2f6?w=600',
+      projectUrl: newProjectUrl || '#',
+      description: newProjectDesc,
+    });
+    setNewProjectName('');
+    setNewProjectImage('');
+    setNewProjectUrl('');
+    setNewProjectDesc('');
+    loadData();
   };
 
   const handleDeleteProject = (id: string) => {
     db.projects.delete(id);
-    refreshData();
+    loadData();
   };
 
-  const handleAddTestimonial = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!newTestimonial.clientName || !newTestimonial.reviewText) return;
-    db.testimonials.create(newTestimonial);
-    setNewTestimonial({ persona: 'software_engineer', clientName: '', clientImageUrl: '', reviewText: '', company: '' });
-    refreshData();
+  // ── TESTIMONIAL CRUD ──
+  const handleCreateTestimonial = () => {
+    if (!newTestName || !newTestReview) return;
+    db.testimonials.create({
+      persona: newTestPersona,
+      clientName: newTestName,
+      clientImageUrl: newTestImage || 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100',
+      reviewText: newTestReview,
+      company: newTestCompany,
+    });
+    setNewTestName('');
+    setNewTestCompany('');
+    setNewTestImage('');
+    setNewTestReview('');
+    loadData();
   };
 
   const handleDeleteTestimonial = (id: string) => {
     db.testimonials.delete(id);
-    refreshData();
+    loadData();
   };
 
-  const handleUpdateBio = (persona: string) => {
-    const bio = biographies.find(b => b.persona === persona);
-    if (!bio || !editingBio[persona]) return;
-    db.biographies.update(bio.id, editingBio[persona]);
-    refreshData();
+  // ── BIOGRAPHY UPDATE ──
+  const handleUpdateBiography = () => {
+    if (!editBioTitle && !editBioText) return;
+    db.biographies.update(editBioPersona, {
+      pitchTitle: editBioTitle,
+      bioText: editBioText,
+    });
+    setEditBioTitle('');
+    setEditBioText('');
+    loadData();
   };
 
   return (
-    <div className="min-h-screen flex" style={{ background: '#0a0a0f', color: '#00FF00' }}>
-      {/* Sidebar */}
+    <div
+      className="min-h-screen flex"
+      style={{
+        background: '#0a0a0f',
+        fontFamily: "'Fira Code', monospace",
+        color: '#00FF00'
+      }}
+    >
+      {/* ── SIDEBAR ── */}
       <AnimatePresence>
         {sidebarOpen && (
           <motion.aside
-            className="fixed left-0 top-0 h-full z-50 flex flex-col"
+            className="fixed left-0 top-0 bottom-0 w-64 z-40 flex flex-col"
             style={{
-              width: '260px',
               background: 'rgba(10, 10, 15, 0.98)',
-              borderRight: '1px solid rgba(0, 255, 0, 0.1)',
+              borderRight: '1px solid rgba(0, 255, 0, 0.15)',
               backdropFilter: 'blur(20px)'
             }}
             initial={{ x: -260 }}
@@ -116,627 +142,351 @@ export default function AdminDashboard() {
             exit={{ x: -260 }}
             transition={{ type: 'spring', stiffness: 300, damping: 30 }}
           >
-            {/* Sidebar header */}
-            <div className="p-5" style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.08)' }}>
-              <h2
-                className="text-sm font-bold tracking-wider"
-                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-              >
+            {/* Sidebar Header */}
+            <div className="p-6" style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.1)' }}>
+              <h2 className="text-sm font-bold" style={{ color: '#00FF00' }}>
                 ◈ ADMIN PANEL
               </h2>
-              <p
-                className="text-[10px] mt-1"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.3)' }}
-              >
-                DB: {db.status.mode}
+              <p className="text-xs mt-1" style={{ color: 'rgba(0, 255, 0, 0.4)' }}>
+                Asa Samuel Bless
               </p>
             </div>
 
-            {/* Nav items */}
+            {/* Navigation */}
             <nav className="flex-1 p-4 space-y-2">
-              <SidebarButton
-                active={activeTab === 'home'}
+              <button
                 onClick={() => setActiveTab('home')}
-                icon="◈"
-                label="Dashboard Home"
-              />
-              <SidebarButton
-                onClick={() => window.open('/?persona=engineer', '_blank')}
-                icon="⚡"
-                label="Preview: Engineer"
-              />
-              <SidebarButton
-                onClick={() => window.open('/?persona=creator', '_blank')}
-                icon="✦"
-                label="Preview: Creator"
-              />
-              <SidebarButton
-                active={activeTab === 'workspace'}
-                onClick={() => setActiveTab('workspace')}
-                icon="⌘"
-                label="Edit Workspace"
-              />
+                className="w-full text-left px-4 py-3 rounded text-sm transition-all"
+                style={{
+                  background: activeTab === 'home' ? 'rgba(0, 255, 0, 0.1)' : 'transparent',
+                  color: activeTab === 'home' ? '#00FF00' : 'rgba(0, 255, 0, 0.5)',
+                  border: activeTab === 'home' ? '1px solid rgba(0, 255, 0, 0.2)' : '1px solid transparent'
+                }}
+              >
+                ◈ Dashboard Home
+              </button>
 
-              <div className="pt-4 mt-4" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.08)' }}>
-                <SidebarButton
-                  onClick={handleLogout}
-                  icon="⏻"
-                  label="Logout"
-                  danger
-                />
-              </div>
+              <a
+                href="/?persona=engineer"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-3 rounded text-sm transition-all"
+                style={{ color: 'rgba(0, 255, 0, 0.5)' }}
+              >
+                ⚡ Preview: Engineer
+              </a>
+
+              <a
+                href="/?persona=creator"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="block px-4 py-3 rounded text-sm transition-all"
+                style={{ color: 'rgba(0, 255, 0, 0.5)' }}
+              >
+                ✦ Preview: Creator
+              </a>
+
+              <button
+                onClick={() => setActiveTab('workspace')}
+                className="w-full text-left px-4 py-3 rounded text-sm transition-all"
+                style={{
+                  background: activeTab === 'workspace' ? 'rgba(0, 255, 0, 0.1)' : 'transparent',
+                  color: activeTab === 'workspace' ? '#00FF00' : 'rgba(0, 255, 0, 0.5)',
+                  border: activeTab === 'workspace' ? '1px solid rgba(0, 255, 0, 0.2)' : '1px solid transparent'
+                }}
+              >
+                ⌘ Edit Workspace
+              </button>
             </nav>
 
-            {/* Sidebar footer */}
-            <div className="p-4" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.08)' }}>
-              <a
-                href="/"
-                className="text-[10px] block text-center hover:underline"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.3)' }}
+            {/* Logout */}
+            <div className="p-4" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.1)' }}>
+              <button
+                onClick={handleLogout}
+                className="w-full px-4 py-3 rounded text-sm transition-all"
+                style={{
+                  background: 'rgba(255, 0, 110, 0.05)',
+                  color: '#FF006E',
+                  border: '1px solid rgba(255, 0, 110, 0.2)'
+                }}
               >
-                ← back to portfolio
-              </a>
+                ⏻ Logout
+              </button>
             </div>
           </motion.aside>
         )}
       </AnimatePresence>
 
-      {/* Main content area */}
+      {/* ── MAIN CONTENT ── */}
       <div
         className="flex-1 transition-all duration-300"
-        style={{ marginLeft: sidebarOpen ? '260px' : '0' }}
+        style={{ marginLeft: sidebarOpen ? '256px' : '0' }}
       >
-        {/* Top bar */}
-        <div
-          className="sticky top-0 z-40 flex items-center justify-between px-6 py-4"
+        {/* Top Bar */}
+        <header
+          className="sticky top-0 z-30 px-6 py-4 flex items-center justify-between"
           style={{
             background: 'rgba(10, 10, 15, 0.9)',
-            backdropFilter: 'blur(20px)',
-            borderBottom: '1px solid rgba(0, 255, 0, 0.08)'
+            borderBottom: '1px solid rgba(0, 255, 0, 0.1)',
+            backdropFilter: 'blur(20px)'
           }}
         >
-          <div className="flex items-center gap-4">
-            <motion.button
-              onClick={() => setSidebarOpen(!sidebarOpen)}
-              className="w-8 h-8 flex items-center justify-center rounded"
-              style={{
-                border: '1px solid rgba(0, 255, 0, 0.2)',
-                background: 'rgba(0, 255, 0, 0.05)',
-                color: '#00FF00',
-                cursor: 'pointer',
-                fontFamily: "'Fira Code', monospace",
-                fontSize: '14px'
-              }}
-              whileHover={{ background: 'rgba(0, 255, 0, 0.1)' }}
-              whileTap={{ scale: 0.9 }}
-            >
-              {sidebarOpen ? '◁' : '▷'}
-            </motion.button>
-            <h1
-              className="text-sm font-bold"
-              style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-            >
-              {activeTab === 'home' ? '// ACTIVITY MATRIX' : '// EDIT WORKSPACE'}
-            </h1>
-          </div>
-          <span
-            className="text-[10px]"
-            style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.3)' }}
+          <button
+            onClick={() => setSidebarOpen(!sidebarOpen)}
+            className="px-3 py-2 rounded text-sm"
+            style={{
+              border: '1px solid rgba(0, 255, 0, 0.2)',
+              color: '#00FF00'
+            }}
           >
-            {new Date().toLocaleTimeString()}
+            {sidebarOpen ? '◁' : '▷'}
+          </button>
+          <h1 className="text-sm" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+            {activeTab === 'home' ? '> activity_matrix' : '> edit_workspace'}
+          </h1>
+          <span className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.3)' }}>
+            asa746090@gmail.com
           </span>
-        </div>
+        </header>
 
-        {/* Content */}
-        <div className="p-6">
-          <AnimatePresence mode="wait">
-            {activeTab === 'home' ? (
-              <motion.div
-                key="home"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <ActivityMatrix logs={activityLogs} />
-              </motion.div>
-            ) : (
-              <motion.div
-                key="workspace"
-                initial={{ opacity: 0, y: 10 }}
-                animate={{ opacity: 1, y: 0 }}
-                exit={{ opacity: 0, y: -10 }}
-                transition={{ duration: 0.3 }}
-              >
-                <EditWorkspace
-                  projects={projects}
-                  testimonials={testimonials}
-                  biographies={biographies}
-                  editingBio={editingBio}
-                  setEditingBio={setEditingBio}
-                  newProject={newProject}
-                  setNewProject={setNewProject}
-                  newTestimonial={newTestimonial}
-                  setNewTestimonial={setNewTestimonial}
-                  onAddProject={handleAddProject}
-                  onDeleteProject={handleDeleteProject}
-                  onAddTestimonial={handleAddTestimonial}
-                  onDeleteTestimonial={handleDeleteTestimonial}
-                  onUpdateBio={handleUpdateBio}
-                />
-              </motion.div>
-            )}
-          </AnimatePresence>
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// ============================================
-// SUB-COMPONENTS
-// ============================================
-
-function SidebarButton({ active, onClick, icon, label, danger }: {
-  active?: boolean;
-  onClick: () => void;
-  icon: string;
-  label: string;
-  danger?: boolean;
-}) {
-  return (
-    <motion.button
-      onClick={onClick}
-      className="w-full flex items-center gap-3 px-4 py-3 rounded text-left text-xs transition-all"
-      style={{
-        fontFamily: "'Fira Code', monospace",
-        background: active ? 'rgba(0, 255, 0, 0.08)' : 'transparent',
-        border: active ? '1px solid rgba(0, 255, 0, 0.15)' : '1px solid transparent',
-        color: danger ? '#FF006E' : active ? '#00FF00' : 'rgba(0, 255, 0, 0.5)',
-        cursor: 'pointer'
-      }}
-      whileHover={{
-        background: danger ? 'rgba(255, 0, 110, 0.05)' : 'rgba(0, 255, 0, 0.05)',
-        x: 4
-      }}
-    >
-      <span>{icon}</span>
-      <span>{label}</span>
-    </motion.button>
-  );
-}
-
-function ActivityMatrix({ logs }: { logs: ActivityLog[] }) {
-  return (
-    <div>
-      <div className="mb-6">
-        <h2
-          className="text-lg font-bold mb-1"
-          style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-        >
-          Activity Log
-        </h2>
-        <p
-          className="text-xs"
-          style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-        >
-          {logs.length} entries recorded
-        </p>
-      </div>
-
-      <div
-        className="rounded-lg overflow-hidden"
-        style={{ border: '1px solid rgba(0, 255, 0, 0.1)' }}
-      >
-        <table className="w-full text-xs" style={{ fontFamily: "'Fira Code', monospace" }}>
-          <thead>
-            <tr style={{ background: 'rgba(0, 255, 0, 0.05)' }}>
-              <th className="px-4 py-3 text-left" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Timestamp</th>
-              <th className="px-4 py-3 text-left" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Section</th>
-              <th className="px-4 py-3 text-left" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Persona</th>
-              <th className="px-4 py-3 text-left" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Action</th>
-              <th className="px-4 py-3 text-left" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Description</th>
-            </tr>
-          </thead>
-          <tbody>
-            {logs.length === 0 ? (
-              <tr>
-                <td colSpan={5} className="px-4 py-8 text-center" style={{ color: 'rgba(0, 255, 0, 0.3)' }}>
-                  No activity recorded yet.
-                </td>
-              </tr>
-            ) : (
-              logs.map((log, i) => (
-                <motion.tr
-                  key={log.id}
-                  initial={{ opacity: 0, x: -10 }}
-                  animate={{ opacity: 1, x: 0 }}
-                  transition={{ delay: i * 0.03 }}
-                  style={{ borderTop: '1px solid rgba(0, 255, 0, 0.05)' }}
-                >
-                  <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>
-                    {new Date(log.timestamp).toLocaleString()}
-                  </td>
-                  <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.7)' }}>{log.targetSection}</td>
-                  <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.7)' }}>{log.personaAffected}</td>
-                  <td className="px-4 py-3">
-                    <span
-                      className="px-2 py-1 rounded text-[10px] font-bold"
-                      style={{
-                        background: log.actionType === 'CREATE' ? 'rgba(0, 255, 0, 0.1)' :
-                          log.actionType === 'UPDATE' ? 'rgba(255, 165, 0, 0.1)' :
-                          'rgba(255, 0, 110, 0.1)',
-                        color: log.actionType === 'CREATE' ? '#00FF00' :
-                          log.actionType === 'UPDATE' ? '#FFA500' : '#FF006E',
-                        border: `1px solid ${log.actionType === 'CREATE' ? 'rgba(0, 255, 0, 0.2)' :
-                          log.actionType === 'UPDATE' ? 'rgba(255, 165, 0, 0.2)' :
-                          'rgba(255, 0, 110, 0.2)'}`
-                      }}
-                    >
-                      {log.actionType}
-                    </span>
-                  </td>
-                  <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>{log.description}</td>
-                </motion.tr>
-              ))
-            )}
-          </tbody>
-        </table>
-      </div>
-    </div>
-  );
-}
-
-function EditWorkspace({
-  projects, testimonials, biographies, editingBio, setEditingBio,
-  newProject, setNewProject, newTestimonial, setNewTestimonial,
-  onAddProject, onDeleteProject, onAddTestimonial, onDeleteTestimonial, onUpdateBio
-}: {
-  projects: Project[];
-  testimonials: Testimonial[];
-  biographies: Biography[];
-  editingBio: { [key: string]: { pitchTitle: string; bioText: string } };
-  setEditingBio: React.Dispatch<React.SetStateAction<{ [key: string]: { pitchTitle: string; bioText: string } }>>;
-  newProject: any;
-  setNewProject: React.Dispatch<React.SetStateAction<any>>;
-  newTestimonial: any;
-  setNewTestimonial: React.Dispatch<React.SetStateAction<any>>;
-  onAddProject: (e: React.FormEvent) => void;
-  onDeleteProject: (id: string) => void;
-  onAddTestimonial: (e: React.FormEvent) => void;
-  onDeleteTestimonial: (id: string) => void;
-  onUpdateBio: (persona: string) => void;
-}) {
-  const inputStyle = {
-    fontFamily: "'Fira Code', monospace",
-    background: 'rgba(0, 255, 0, 0.03)',
-    border: '1px solid rgba(0, 255, 0, 0.15)',
-    color: '#00FF00',
-    fontSize: '12px'
-  };
-
-  return (
-    <div className="space-y-10">
-      {/* Biography Editor */}
-      <section>
-        <h3
-          className="text-sm font-bold mb-4"
-          style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-        >
-          {'> '}Biographies
-        </h3>
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          {biographies.map(bio => (
-            <div
-              key={bio.id}
-              className="p-5 rounded-lg"
-              style={{ border: '1px solid rgba(0, 255, 0, 0.1)', background: 'rgba(0, 255, 0, 0.02)' }}
-            >
-              <p
-                className="text-[10px] mb-3 uppercase tracking-wider"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-              >
-                {bio.persona === 'software_engineer' ? '⚡ Engineer' : '✦ Creator'}
-              </p>
-              <input
-                className="w-full px-3 py-2 rounded mb-3 outline-none"
-                style={inputStyle}
-                value={editingBio[bio.persona]?.pitchTitle || ''}
-                onChange={(e) => setEditingBio(prev => ({
-                  ...prev,
-                  [bio.persona]: { ...prev[bio.persona], pitchTitle: e.target.value }
-                }))}
-                placeholder="Pitch Title"
-              />
-              <textarea
-                className="w-full px-3 py-2 rounded mb-3 outline-none resize-none"
-                style={{ ...inputStyle, minHeight: '80px' }}
-                value={editingBio[bio.persona]?.bioText || ''}
-                onChange={(e) => setEditingBio(prev => ({
-                  ...prev,
-                  [bio.persona]: { ...prev[bio.persona], bioText: e.target.value }
-                }))}
-                placeholder="Biography text"
-              />
-              <button
-                onClick={() => onUpdateBio(bio.persona)}
-                className="px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider"
+        {/* Content Area */}
+        <main className="p-6">
+          {activeTab === 'home' ? (
+            /* ── ACTIVITY MATRIX ── */
+            <div>
+              <h2 className="text-lg font-bold mb-6" style={{ color: '#00FF00' }}>
+                ◈ Activity Matrix
+              </h2>
+              <div
+                className="rounded-lg overflow-hidden"
                 style={{
-                  fontFamily: "'Fira Code', monospace",
-                  background: 'rgba(0, 255, 0, 0.1)',
-                  border: '1px solid rgba(0, 255, 0, 0.2)',
-                  color: '#00FF00',
-                  cursor: 'pointer'
+                  border: '1px solid rgba(0, 255, 0, 0.15)',
+                  background: 'rgba(10, 10, 15, 0.5)'
                 }}
               >
-                Save Changes
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
-
-      {/* Projects CRUD */}
-      <section>
-        <h3
-          className="text-sm font-bold mb-4"
-          style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-        >
-          {'> '}Projects ({projects.length})
-        </h3>
-
-        {/* Add form */}
-        <form
-          onSubmit={onAddProject}
-          className="p-5 rounded-lg mb-4"
-          style={{ border: '1px solid rgba(0, 255, 0, 0.1)', background: 'rgba(0, 255, 0, 0.02)' }}
-        >
-          <p
-            className="text-[10px] mb-3 uppercase tracking-wider"
-            style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-          >
-            + Add New Project
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Project Name"
-              value={newProject.name}
-              onChange={(e) => setNewProject({ ...newProject, name: e.target.value })}
-            />
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Image URL"
-              value={newProject.imageUrl}
-              onChange={(e) => setNewProject({ ...newProject, imageUrl: e.target.value })}
-            />
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Project URL"
-              value={newProject.projectUrl}
-              onChange={(e) => setNewProject({ ...newProject, projectUrl: e.target.value })}
-            />
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-[10px]" style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}>
-                <input
-                  type="radio"
-                  name="project-persona"
-                  checked={newProject.persona === 'software_engineer'}
-                  onChange={() => setNewProject({ ...newProject, persona: 'software_engineer' })}
-                />
-                ⚡ Engineer
-              </label>
-              <label className="flex items-center gap-2 text-[10px]" style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}>
-                <input
-                  type="radio"
-                  name="project-persona"
-                  checked={newProject.persona === 'content_creator'}
-                  onChange={() => setNewProject({ ...newProject, persona: 'content_creator' })}
-                />
-                ✦ Creator
-              </label>
-            </div>
-          </div>
-          <textarea
-            className="w-full px-3 py-2 rounded mb-3 outline-none resize-none"
-            style={{ ...inputStyle, minHeight: '60px' }}
-            placeholder="Description"
-            value={newProject.description}
-            onChange={(e) => setNewProject({ ...newProject, description: e.target.value })}
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider"
-            style={{
-              fontFamily: "'Fira Code', monospace",
-              background: 'rgba(0, 255, 0, 0.1)',
-              border: '1px solid rgba(0, 255, 0, 0.2)',
-              color: '#00FF00',
-              cursor: 'pointer'
-            }}
-          >
-            + Create Project
-          </button>
-        </form>
-
-        {/* Project list */}
-        <div className="space-y-2">
-          {projects.map(project => (
-            <div
-              key={project.id}
-              className="flex items-center justify-between p-3 rounded"
-              style={{ border: '1px solid rgba(0, 255, 0, 0.06)', background: 'rgba(0, 255, 0, 0.01)' }}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className="text-[10px] px-2 py-1 rounded"
-                  style={{
-                    fontFamily: "'Fira Code', monospace",
-                    background: project.persona === 'software_engineer' ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 110, 0.1)',
-                    color: project.persona === 'software_engineer' ? '#00FF00' : '#FF006E',
-                    border: `1px solid ${project.persona === 'software_engineer' ? 'rgba(0, 255, 0, 0.2)' : 'rgba(255, 0, 110, 0.2)'}`
-                  }}
-                >
-                  {project.persona === 'software_engineer' ? '⚡' : '✦'}
-                </span>
-                <span
-                  className="text-xs"
-                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.7)' }}
-                >
-                  {project.name}
-                </span>
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr style={{ background: 'rgba(0, 255, 0, 0.05)' }}>
+                        <th className="text-left px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Timestamp</th>
+                        <th className="text-left px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Section</th>
+                        <th className="text-left px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Persona</th>
+                        <th className="text-left px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Action</th>
+                        <th className="text-left px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>Description</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {activityLog.length === 0 ? (
+                        <tr>
+                          <td colSpan={5} className="px-4 py-8 text-center" style={{ color: 'rgba(0, 255, 0, 0.3)' }}>
+                            No activity recorded yet.
+                          </td>
+                        </tr>
+                      ) : (
+                        activityLog.map((log, i) => (
+                          <motion.tr
+                            key={log.id}
+                            className="transition-colors"
+                            style={{ borderTop: '1px solid rgba(0, 255, 0, 0.05)' }}
+                            initial={{ opacity: 0, x: -20 }}
+                            animate={{ opacity: 1, x: 0 }}
+                            transition={{ delay: i * 0.05 }}
+                          >
+                            <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>
+                              {new Date(log.timestamp).toLocaleString()}
+                            </td>
+                            <td className="px-4 py-3" style={{ color: '#00FF00' }}>{log.targetSection}</td>
+                            <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>
+                              {log.personaAffected === 'software_engineer' ? '⚡ Engineer' :
+                               log.personaAffected === 'content_creator' ? '✦ Creator' :
+                               log.personaAffected}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className="px-2 py-1 rounded text-[10px] font-bold"
+                                style={{
+                                  background: log.actionType === 'CREATE' ? 'rgba(0, 255, 0, 0.1)' :
+                                             log.actionType === 'UPDATE' ? 'rgba(255, 165, 0, 0.1)' :
+                                             'rgba(255, 0, 110, 0.1)',
+                                  color: log.actionType === 'CREATE' ? '#00FF00' :
+                                        log.actionType === 'UPDATE' ? '#FFA500' :
+                                        '#FF006E',
+                                  border: log.actionType === 'CREATE' ? '1px solid rgba(0, 255, 0, 0.2)' :
+                                         log.actionType === 'UPDATE' ? '1px solid rgba(255, 165, 0, 0.2)' :
+                                         '1px solid rgba(255, 0, 110, 0.2)'
+                                }}
+                              >
+                                {log.actionType}
+                              </span>
+                            </td>
+                            <td className="px-4 py-3" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>
+                              {log.description}
+                            </td>
+                          </motion.tr>
+                        ))
+                      )}
+                    </tbody>
+                  </table>
+                </div>
               </div>
-              <button
-                onClick={() => onDeleteProject(project.id)}
-                className="w-7 h-7 flex items-center justify-center rounded text-xs"
-                style={{
-                  background: 'rgba(255, 0, 110, 0.1)',
-                  border: '1px solid rgba(255, 0, 110, 0.2)',
-                  color: '#FF006E',
-                  cursor: 'pointer'
-                }}
-                title="Delete"
-              >
-                🗑
-              </button>
             </div>
-          ))}
-        </div>
-      </section>
+          ) : (
+            /* ── EDIT WORKSPACE ── */
+            <div className="space-y-10">
+              {/* BIOGRAPHY EDITOR */}
+              <section>
+                <h3 className="text-sm font-bold mb-4" style={{ color: '#FF006E' }}>
+                  ⌘ Biography Editor
+                </h3>
+                <div className="space-y-4">
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input
+                        type="radio"
+                        name="bioPersona"
+                        checked={editBioPersona === 'software_engineer'}
+                        onChange={() => setEditBioPersona('software_engineer')}
+                      />
+                      ⚡ Engineer
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input
+                        type="radio"
+                        name="bioPersona"
+                        checked={editBioPersona === 'content_creator'}
+                        onChange={() => setEditBioPersona('content_creator')}
+                      />
+                      ✦ Creator
+                    </label>
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Pitch Title"
+                    value={editBioTitle}
+                    onChange={(e) => setEditBioTitle(e.target.value)}
+                    className="w-full px-4 py-3 rounded text-xs"
+                    style={{
+                      background: 'rgba(0, 255, 0, 0.03)',
+                      border: '1px solid rgba(0, 255, 0, 0.2)',
+                      color: '#00FF00'
+                    }}
+                  />
+                  <textarea
+                    placeholder="Bio text..."
+                    value={editBioText}
+                    onChange={(e) => setEditBioText(e.target.value)}
+                    rows={4}
+                    className="w-full px-4 py-3 rounded text-xs resize-none"
+                    style={{
+                      background: 'rgba(0, 255, 0, 0.03)',
+                      border: '1px solid rgba(0, 255, 0, 0.2)',
+                      color: '#00FF00'
+                    }}
+                  />
+                  <button
+                    onClick={handleUpdateBiography}
+                    className="px-6 py-2 rounded text-xs font-bold"
+                    style={{
+                      background: 'rgba(0, 255, 0, 0.1)',
+                      border: '1px solid rgba(0, 255, 0, 0.3)',
+                      color: '#00FF00'
+                    }}
+                  >
+                    $ update --biography
+                  </button>
+                </div>
+              </section>
 
-      {/* Testimonials CRUD */}
-      <section>
-        <h3
-          className="text-sm font-bold mb-4"
-          style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-        >
-          {'> '}Testimonials ({testimonials.length})
-        </h3>
+              {/* PROJECTS CRUD */}
+              <section>
+                <h3 className="text-sm font-bold mb-4" style={{ color: '#FF006E' }}>
+                  ⌘ Projects Manager
+                </h3>
+                <div className="space-y-4 mb-6">
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input type="radio" name="projPersona" checked={newProjectPersona === 'software_engineer'} onChange={() => setNewProjectPersona('software_engineer')} />
+                      ⚡ Engineer
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input type="radio" name="projPersona" checked={newProjectPersona === 'content_creator'} onChange={() => setNewProjectPersona('content_creator')} />
+                      ✦ Creator
+                    </label>
+                  </div>
+                  <input type="text" placeholder="Project Name" value={newProjectName} onChange={(e) => setNewProjectName(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <input type="text" placeholder="Image URL" value={newProjectImage} onChange={(e) => setNewProjectImage(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <input type="text" placeholder="Project URL" value={newProjectUrl} onChange={(e) => setNewProjectUrl(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <textarea placeholder="Description" value={newProjectDesc} onChange={(e) => setNewProjectDesc(e.target.value)} rows={3} className="w-full px-4 py-3 rounded text-xs resize-none" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <button onClick={handleCreateProject} className="px-6 py-2 rounded text-xs font-bold" style={{ background: 'rgba(0, 255, 0, 0.1)', border: '1px solid rgba(0, 255, 0, 0.3)', color: '#00FF00' }}>
+                    $ create --project
+                  </button>
+                </div>
 
-        {/* Add form */}
-        <form
-          onSubmit={onAddTestimonial}
-          className="p-5 rounded-lg mb-4"
-          style={{ border: '1px solid rgba(0, 255, 0, 0.1)', background: 'rgba(0, 255, 0, 0.02)' }}
-        >
-          <p
-            className="text-[10px] mb-3 uppercase tracking-wider"
-            style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-          >
-            + Add New Testimonial
-          </p>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-3 mb-3">
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Client Name"
-              value={newTestimonial.clientName}
-              onChange={(e) => setNewTestimonial({ ...newTestimonial, clientName: e.target.value })}
-            />
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Company"
-              value={newTestimonial.company}
-              onChange={(e) => setNewTestimonial({ ...newTestimonial, company: e.target.value })}
-            />
-            <input
-              className="px-3 py-2 rounded outline-none"
-              style={inputStyle}
-              placeholder="Avatar URL"
-              value={newTestimonial.clientImageUrl}
-              onChange={(e) => setNewTestimonial({ ...newTestimonial, clientImageUrl: e.target.value })}
-            />
-            <div className="flex items-center gap-4">
-              <label className="flex items-center gap-2 text-[10px]" style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}>
-                <input
-                  type="radio"
-                  name="testimonial-persona"
-                  checked={newTestimonial.persona === 'software_engineer'}
-                  onChange={() => setNewTestimonial({ ...newTestimonial, persona: 'software_engineer' })}
-                />
-                ⚡ Engineer
-              </label>
-              <label className="flex items-center gap-2 text-[10px]" style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}>
-                <input
-                  type="radio"
-                  name="testimonial-persona"
-                  checked={newTestimonial.persona === 'content_creator'}
-                  onChange={() => setNewTestimonial({ ...newTestimonial, persona: 'content_creator' })}
-                />
-                ✦ Creator
-              </label>
+                {/* Project List */}
+                <div className="space-y-2">
+                  {projects.map(p => (
+                    <div key={p.id} className="flex items-center justify-between px-4 py-3 rounded" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.1)' }}>
+                      <div>
+                        <span className="text-xs font-bold" style={{ color: '#00FF00' }}>{p.name}</span>
+                        <span className="ml-2 text-[10px]" style={{ color: p.persona === 'software_engineer' ? '#00FF00' : '#FF006E' }}>
+                          [{p.persona === 'software_engineer' ? '⚡ ENG' : '✦ CRE'}]
+                        </span>
+                      </div>
+                      <button onClick={() => handleDeleteProject(p.id)} className="text-xs px-2 py-1 rounded" style={{ color: '#FF006E', border: '1px solid rgba(255, 0, 110, 0.3)' }}>
+                        🗑
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
+
+              {/* TESTIMONIALS CRUD */}
+              <section>
+                <h3 className="text-sm font-bold mb-4" style={{ color: '#FF006E' }}>
+                  ⌘ Testimonials Manager
+                </h3>
+                <div className="space-y-4 mb-6">
+                  <div className="flex gap-4">
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input type="radio" name="testPersona" checked={newTestPersona === 'software_engineer'} onChange={() => setNewTestPersona('software_engineer')} />
+                      ⚡ Engineer
+                    </label>
+                    <label className="flex items-center gap-2 text-xs cursor-pointer" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                      <input type="radio" name="testPersona" checked={newTestPersona === 'content_creator'} onChange={() => setNewTestPersona('content_creator')} />
+                      ✦ Creator
+                    </label>
+                  </div>
+                  <input type="text" placeholder="Client Name" value={newTestName} onChange={(e) => setNewTestName(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <input type="text" placeholder="Company" value={newTestCompany} onChange={(e) => setNewTestCompany(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <input type="text" placeholder="Avatar URL" value={newTestImage} onChange={(e) => setNewTestImage(e.target.value)} className="w-full px-4 py-3 rounded text-xs" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <textarea placeholder="Review text" value={newTestReview} onChange={(e) => setNewTestReview(e.target.value)} rows={3} className="w-full px-4 py-3 rounded text-xs resize-none" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.2)', color: '#00FF00' }} />
+                  <button onClick={handleCreateTestimonial} className="px-6 py-2 rounded text-xs font-bold" style={{ background: 'rgba(0, 255, 0, 0.1)', border: '1px solid rgba(0, 255, 0, 0.3)', color: '#00FF00' }}>
+                    $ create --testimonial
+                  </button>
+                </div>
+
+                {/* Testimonial List */}
+                <div className="space-y-2">
+                  {testimonials.map(t => (
+                    <div key={t.id} className="flex items-center justify-between px-4 py-3 rounded" style={{ background: 'rgba(0, 255, 0, 0.03)', border: '1px solid rgba(0, 255, 0, 0.1)' }}>
+                      <div>
+                        <span className="text-xs font-bold" style={{ color: '#00FF00' }}>{t.clientName}</span>
+                        <span className="ml-2 text-[10px]" style={{ color: 'rgba(0, 255, 0, 0.4)' }}>({t.company})</span>
+                        <span className="ml-2 text-[10px]" style={{ color: t.persona === 'software_engineer' ? '#00FF00' : '#FF006E' }}>
+                          [{t.persona === 'software_engineer' ? '⚡ ENG' : '✦ CRE'}]
+                        </span>
+                      </div>
+                      <button onClick={() => handleDeleteTestimonial(t.id)} className="text-xs px-2 py-1 rounded" style={{ color: '#FF006E', border: '1px solid rgba(255, 0, 110, 0.3)' }}>
+                        🗑
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              </section>
             </div>
-          </div>
-          <textarea
-            className="w-full px-3 py-2 rounded mb-3 outline-none resize-none"
-            style={{ ...inputStyle, minHeight: '60px' }}
-            placeholder="Review Text"
-            value={newTestimonial.reviewText}
-            onChange={(e) => setNewTestimonial({ ...newTestimonial, reviewText: e.target.value })}
-          />
-          <button
-            type="submit"
-            className="px-4 py-2 rounded text-[10px] font-bold uppercase tracking-wider"
-            style={{
-              fontFamily: "'Fira Code', monospace",
-              background: 'rgba(0, 255, 0, 0.1)',
-              border: '1px solid rgba(0, 255, 0, 0.2)',
-              color: '#00FF00',
-              cursor: 'pointer'
-            }}
-          >
-            + Create Testimonial
-          </button>
-        </form>
-
-        {/* Testimonial list */}
-        <div className="space-y-2">
-          {testimonials.map(testimonial => (
-            <div
-              key={testimonial.id}
-              className="flex items-center justify-between p-3 rounded"
-              style={{ border: '1px solid rgba(0, 255, 0, 0.06)', background: 'rgba(0, 255, 0, 0.01)' }}
-            >
-              <div className="flex items-center gap-3">
-                <span
-                  className="text-[10px] px-2 py-1 rounded"
-                  style={{
-                    fontFamily: "'Fira Code', monospace",
-                    background: testimonial.persona === 'software_engineer' ? 'rgba(0, 255, 0, 0.1)' : 'rgba(255, 0, 110, 0.1)',
-                    color: testimonial.persona === 'software_engineer' ? '#00FF00' : '#FF006E',
-                    border: `1px solid ${testimonial.persona === 'software_engineer' ? 'rgba(0, 255, 0, 0.2)' : 'rgba(255, 0, 110, 0.2)'}`
-                  }}
-                >
-                  {testimonial.persona === 'software_engineer' ? '⚡' : '✦'}
-                </span>
-                <span
-                  className="text-xs"
-                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.7)' }}
-                >
-                  {testimonial.clientName} — {testimonial.company}
-                </span>
-              </div>
-              <button
-                onClick={() => onDeleteTestimonial(testimonial.id)}
-                className="w-7 h-7 flex items-center justify-center rounded text-xs"
-                style={{
-                  background: 'rgba(255, 0, 110, 0.1)',
-                  border: '1px solid rgba(255, 0, 110, 0.2)',
-                  color: '#FF006E',
-                  cursor: 'pointer'
-                }}
-                title="Delete"
-              >
-                🗑
-              </button>
-            </div>
-          ))}
-        </div>
-      </section>
+          )}
+        </main>
+      </div>
     </div>
   );
 }

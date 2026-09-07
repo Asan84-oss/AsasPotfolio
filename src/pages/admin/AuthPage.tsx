@@ -1,12 +1,12 @@
 import { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { motion, AnimatePresence } from 'framer-motion';
+import { motion } from 'framer-motion';
 import db from '../../lib/db';
-import { checkAdminExists } from '../../middleware';
 
 export default function AdminAuth() {
   const navigate = useNavigate();
-  const [isLoginMode, setIsLoginMode] = useState(false);
+  const [mode, setMode] = useState<'login' | 'register'>('login');
+  const [adminExists, setAdminExists] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
@@ -14,246 +14,242 @@ export default function AdminAuth() {
 
   useEffect(() => {
     // Check if admin already exists
-    const adminExists = checkAdminExists();
-    if (adminExists) {
-      setIsLoginMode(true);
+    const existingAdmin = db.admin.get();
+    if (existingAdmin && existingAdmin.isRegistered) {
+      setAdminExists(true);
+      setMode('login');
+    } else {
+      setMode('register');
     }
   }, []);
 
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     setError('');
     setLoading(true);
 
-    // Simulate network delay
-    await new Promise(resolve => setTimeout(resolve, 800));
+    if (adminExists) {
+      setError('Registration is permanently closed. An admin account already exists.');
+      setLoading(false);
+      return;
+    }
+
+    if (!email || !password) {
+      setError('All fields are required.');
+      setLoading(false);
+      return;
+    }
+
+    if (password.length < 6) {
+      setError('Password must be at least 6 characters.');
+      setLoading(false);
+      return;
+    }
 
     try {
-      if (isLoginMode) {
-        // LOGIN
-        const admin = db.admin.authenticate(email, password);
-        if (!admin) {
-          setError('Invalid credentials. Access denied.');
-          setLoading(false);
-          return;
-        }
-        // Set auth token
-        const token = `jwt_${crypto.randomUUID()}`;
-        db.auth.setToken(token);
-        db.activityLog.create({
-          targetSection: 'Authentication',
-          personaAffected: 'system',
-          actionType: 'CREATE',
-          description: `Admin logged in: ${email}`
-        });
-        navigate('/admin/dashboard');
-      } else {
-        // REGISTER
-        if (checkAdminExists()) {
-          setError('Registration is permanently disabled. An admin account already exists.');
-          setIsLoginMode(true);
-          setLoading(false);
-          return;
-        }
-        if (password.length < 6) {
-          setError('Password must be at least 6 characters.');
-          setLoading(false);
-          return;
-        }
-        db.admin.create(email, password);
-        const token = `jwt_${crypto.randomUUID()}`;
-        db.auth.setToken(token);
-        db.activityLog.create({
-          targetSection: 'Authentication',
-          personaAffected: 'system',
-          actionType: 'CREATE',
-          description: `Admin account created: ${email}`
-        });
-        navigate('/admin/dashboard');
-      }
+      db.admin.create(email, password);
+      const token = btoa(`${email}:${Date.now()}`);
+      db.auth.setToken(token);
+      
+      db.activityLog.create({
+        targetSection: 'Auth',
+        personaAffected: 'system',
+        actionType: 'CREATE',
+        description: `Admin account created: ${email}`,
+      });
+
+      setLoading(false);
+      navigate('/admin/dashboard');
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'An error occurred');
+      setError('Registration failed. Please try again.');
+      setLoading(false);
     }
-    setLoading(false);
+  };
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    setError('');
+    setLoading(true);
+
+    if (!email || !password) {
+      setError('All fields are required.');
+      setLoading(false);
+      return;
+    }
+
+    try {
+      const isValid = db.admin.verify(email, password);
+      if (!isValid) {
+        setError('Invalid credentials. Please check your email and password.');
+        setLoading(false);
+        return;
+      }
+
+      const token = btoa(`${email}:${Date.now()}`);
+      db.auth.setToken(token);
+
+      db.activityLog.create({
+        targetSection: 'Auth',
+        personaAffected: 'system',
+        actionType: 'CREATE',
+        description: `Admin logged in: ${email}`,
+      });
+
+      setLoading(false);
+      navigate('/admin/dashboard');
+    } catch (err) {
+      setError('Login failed. Please try again.');
+      setLoading(false);
+    }
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center relative overflow-hidden"
-      style={{ background: '#0a0a0f' }}>
-      
-      {/* Matrix background */}
-      <div className="absolute inset-0 opacity-20">
-        <div className="absolute inset-0" style={{
-          backgroundImage: `
-            linear-gradient(rgba(0, 255, 0, 0.03) 1px, transparent 1px),
-            linear-gradient(90deg, rgba(0, 255, 0, 0.03) 1px, transparent 1px)
-          `,
-          backgroundSize: '50px 50px'
-        }} />
-      </div>
+    <div
+      className="min-h-screen flex items-center justify-center px-4"
+      style={{
+        background: '#0a0a0f',
+        fontFamily: "'Fira Code', monospace"
+      }}
+    >
+      {/* Background grid */}
+      <div className="fixed inset-0 opacity-5" style={{
+        backgroundImage: `
+          linear-gradient(rgba(0, 255, 0, 0.3) 1px, transparent 1px),
+          linear-gradient(90deg, rgba(0, 255, 0, 0.3) 1px, transparent 1px)
+        `,
+        backgroundSize: '50px 50px'
+      }} />
 
       <motion.div
-        className="relative z-10 w-full max-w-md mx-4"
-        initial={{ opacity: 0, y: 30 }}
+        className="relative w-full max-w-md"
+        initial={{ opacity: 0, y: 20 }}
         animate={{ opacity: 1, y: 0 }}
-        transition={{ duration: 0.6 }}
+        transition={{ duration: 0.5 }}
       >
-        {/* Terminal window */}
+        {/* Terminal Window */}
         <div
           className="rounded-lg overflow-hidden"
           style={{
             background: 'rgba(10, 10, 15, 0.95)',
             border: '1px solid rgba(0, 255, 0, 0.2)',
-            boxShadow: '0 0 40px rgba(0, 255, 0, 0.05)'
+            boxShadow: '0 0 40px rgba(0, 255, 0, 0.1)'
           }}
         >
-          {/* Terminal header */}
+          {/* Terminal Header */}
           <div
-            className="flex items-center gap-2 px-4 py-3"
-            style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.1)' }}
+            className="px-4 py-3 flex items-center gap-2"
+            style={{ borderBottom: '1px solid rgba(0, 255, 0, 0.15)' }}
           >
             <div className="w-3 h-3 rounded-full" style={{ background: '#FF5F56' }} />
             <div className="w-3 h-3 rounded-full" style={{ background: '#FFBD2E' }} />
             <div className="w-3 h-3 rounded-full" style={{ background: '#27C93F' }} />
-            <span
-              className="ml-4 text-xs"
-              style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.5)' }}
-            >
-              admin_auth.sys — {isLoginMode ? 'LOGIN' : 'REGISTRATION'}
+            <span className="ml-4 text-xs" style={{ color: 'rgba(0, 255, 0, 0.5)' }}>
+              admin@asa-portfolio:~$ {mode === 'register' ? 'register --new' : 'auth --login'}
             </span>
           </div>
 
-          {/* Terminal body */}
+          {/* Terminal Body */}
           <div className="p-8">
-            <motion.div
-              className="mb-8 text-center"
-              key={isLoginMode ? 'login' : 'register'}
-              initial={{ opacity: 0 }}
-              animate={{ opacity: 1 }}
-              transition={{ duration: 0.3 }}
+            <h1
+              className="text-xl font-bold mb-2"
+              style={{ color: '#00FF00' }}
             >
-              <h1
-                className="text-2xl font-bold mb-2"
-                style={{ fontFamily: "'Fira Code', monospace", color: '#00FF00' }}
-              >
-                {isLoginMode ? '> system.login()' : '> admin.register()'}
-              </h1>
-              <p
-                className="text-xs"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.4)' }}
-              >
-                {isLoginMode
-                  ? '// Authenticate with existing credentials'
-                  : '// Create administrator account (one-time only)'}
-              </p>
-            </motion.div>
+              {adminExists ? '> SYSTEM.LOGIN' : '> SYSTEM.REGISTER'}
+            </h1>
+            <p className="text-xs mb-8" style={{ color: 'rgba(0, 255, 0, 0.4)' }}>
+              {adminExists
+                ? '// Registration permanently locked. Enter credentials.'
+                : '// Create the administrator account. This action is one-time only.'}
+            </p>
 
-            <form onSubmit={handleSubmit} className="space-y-5">
+            <form onSubmit={mode === 'register' ? handleRegister : handleLogin} className="space-y-6">
+              {/* Email */}
               <div>
-                <label
-                  className="block text-xs mb-2 tracking-wider"
-                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}
-                >
-                  EMAIL_ADDRESS:
+                <label className="block text-xs mb-2" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                  $ email_address:
                 </label>
                 <input
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 rounded text-sm outline-none"
                   style={{
-                    fontFamily: "'Fira Code', monospace",
                     background: 'rgba(0, 255, 0, 0.03)',
-                    border: '1px solid rgba(0, 255, 0, 0.15)',
+                    border: '1px solid rgba(0, 255, 0, 0.2)',
                     color: '#00FF00',
-                    caretColor: '#00FF00'
+                    fontFamily: "'Fira Code', monospace"
                   }}
                   placeholder="admin@portfolio.dev"
+                  disabled={loading}
                 />
               </div>
 
+              {/* Password */}
               <div>
-                <label
-                  className="block text-xs mb-2 tracking-wider"
-                  style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.6)' }}
-                >
-                  PASSWORD:
+                <label className="block text-xs mb-2" style={{ color: 'rgba(0, 255, 0, 0.6)' }}>
+                  $ secret_key:
                 </label>
                 <input
                   type="password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
-                  className="w-full px-4 py-3 rounded text-sm outline-none transition-all"
+                  className="w-full px-4 py-3 rounded text-sm outline-none"
                   style={{
-                    fontFamily: "'Fira Code', monospace",
                     background: 'rgba(0, 255, 0, 0.03)',
-                    border: '1px solid rgba(0, 255, 0, 0.15)',
+                    border: '1px solid rgba(0, 255, 0, 0.2)',
                     color: '#00FF00',
-                    caretColor: '#00FF00'
+                    fontFamily: "'Fira Code', monospace"
                   }}
                   placeholder="••••••••"
+                  disabled={loading}
                 />
               </div>
 
-              <AnimatePresence>
-                {error && (
-                  <motion.div
-                    initial={{ opacity: 0, height: 0 }}
-                    animate={{ opacity: 1, height: 'auto' }}
-                    exit={{ opacity: 0, height: 0 }}
-                    className="px-4 py-3 rounded text-xs"
-                    style={{
-                      fontFamily: "'Fira Code', monospace",
-                      background: 'rgba(255, 0, 110, 0.1)',
-                      border: '1px solid rgba(255, 0, 110, 0.3)',
-                      color: '#FF006E'
-                    }}
-                  >
-                    ERROR: {error}
-                  </motion.div>
-                )}
-              </AnimatePresence>
+              {/* Error */}
+              {error && (
+                <motion.div
+                  className="px-4 py-3 rounded text-xs"
+                  style={{
+                    background: 'rgba(255, 0, 110, 0.1)',
+                    border: '1px solid rgba(255, 0, 110, 0.3)',
+                    color: '#FF006E'
+                  }}
+                  initial={{ opacity: 0, y: -10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                >
+                  ✗ {error}
+                </motion.div>
+              )}
 
-              <motion.button
+              {/* Submit */}
+              <button
                 type="submit"
                 disabled={loading}
                 className="w-full py-3 rounded text-sm font-bold tracking-wider uppercase transition-all"
                 style={{
-                  fontFamily: "'Fira Code', monospace",
-                  background: loading
-                    ? 'rgba(0, 255, 0, 0.05)'
-                    : 'linear-gradient(135deg, rgba(0, 255, 0, 0.15), rgba(255, 0, 110, 0.15))',
+                  background: 'linear-gradient(135deg, rgba(0, 255, 0, 0.15), rgba(255, 0, 110, 0.15))',
                   border: '1px solid rgba(0, 255, 0, 0.3)',
                   color: '#00FF00',
-                  cursor: loading ? 'wait' : 'pointer'
+                  fontFamily: "'Fira Code', monospace",
+                  cursor: loading ? 'not-allowed' : 'pointer'
                 }}
-                whileHover={!loading ? { boxShadow: '0 0 20px rgba(0, 255, 0, 0.2)' } : {}}
-                whileTap={!loading ? { scale: 0.98 } : {}}
               >
-                {loading ? 'PROCESSING...' : isLoginMode ? '$ auth --login' : '$ admin --create'}
-              </motion.button>
+                {loading
+                  ? '> processing...'
+                  : mode === 'register'
+                    ? '$ admin --create'
+                    : '$ admin --login'}
+              </button>
             </form>
 
-            {/* Status bar */}
-            <div
-              className="mt-6 pt-4 flex items-center justify-between"
-              style={{ borderTop: '1px solid rgba(0, 255, 0, 0.08)' }}
-            >
-              <span
-                className="text-[10px]"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.3)' }}
-              >
-                DB: {db.status.mode}
-              </span>
-              <a
-                href="/"
-                className="text-[10px] hover:underline"
-                style={{ fontFamily: "'Fira Code', monospace", color: 'rgba(0, 255, 0, 0.3)' }}
-              >
-                ← back to portfolio
-              </a>
+            {/* Footer info */}
+            <div className="mt-8 pt-6 text-center" style={{ borderTop: '1px solid rgba(0, 255, 0, 0.1)' }}>
+              <p className="text-xs" style={{ color: 'rgba(0, 255, 0, 0.3)' }}>
+                Asa Samuel Bless — Portfolio Admin System v1.0
+              </p>
+              <p className="text-xs mt-1" style={{ color: 'rgba(0, 255, 0, 0.2)' }}>
+                Douala, Cameroon
+              </p>
             </div>
           </div>
         </div>

@@ -1,15 +1,51 @@
 import { motion } from 'framer-motion';
-import { getTestimonials, type Testimonial } from '../data/mockData';
 
 interface TestimonialsProps {
   persona: 'engineer' | 'creator';
 }
 
+// Real testimonials data
+const engineerTestimonials = [
+  {
+    id: 'eng-t1',
+    persona: 'software_engineer',
+    clientName: 'Emmanuel Okoro',
+    clientImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa delivered our complaint tracking system ahead of schedule. His understanding of financial workflows and ability to translate complex requirements into clean, functional code is exceptional. The dashboard has transformed how we handle customer grievances.',
+    company: 'UBA Bank — Digital Operations'
+  },
+  {
+    id: 'eng-t2',
+    persona: 'software_engineer',
+    clientName: 'Dr. Amina Bello',
+    clientImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'The voice-cloned AI assistant Asa built for us is remarkable. His expertise in deep learning pipelines and real-time streaming architecture made what seemed impossible, possible. He communicates clearly and delivers consistently.',
+    company: 'NeuralFlow AI Labs'
+  }
+];
+
+const creatorTestimonials = [
+  {
+    id: 'cre-t1',
+    persona: 'content_creator',
+    clientName: 'Chioma Nwosu',
+    clientImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Working with Asa was a game-changer for our brand. He took our vague ideas and turned them into viral content that reached millions. His understanding of the TikTok algorithm is unmatched, and his editing skills are top-tier.',
+    company: 'GlowUp Beauty — Brand Director'
+  },
+  {
+    id: 'cre-t2',
+    persona: 'content_creator',
+    clientName: 'Tunde Adeyemi',
+    clientImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa helped us build a TikTok presence from scratch. Within 30 days, we had 4,000 engaged followers and content that consistently hit the For You page. His strategic approach to trend-jacking is brilliant.',
+    company: 'Lagos Streetwear Co.'
+  }
+];
+
 export default function Testimonials({ persona }: TestimonialsProps) {
   const isEngineer = persona === 'engineer';
-  const filteredTestimonials = getTestimonials().filter(t =>
-    isEngineer ? t.persona === 'software_engineer' : t.persona === 'content_creator'
-  );
+  const filteredTestimonials = isEngineer ? engineerTestimonials : creatorTestimonials;
 
   return (
     <section
@@ -49,7 +85,7 @@ export default function Testimonials({ persona }: TestimonialsProps) {
 
         {/* Testimonials Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          {filteredTestimonials.map((testimonial: Testimonial, index: number) => (
+          {filteredTestimonials.map((testimonial, index) => (
             <motion.div
               key={testimonial.id}
               className="relative p-8 rounded-xl"
@@ -89,16 +125,12 @@ export default function Testimonials({ persona }: TestimonialsProps) {
 
               {/* Review text */}
               <p
-                className="leading-relaxed mb-8 mt-6"
+                className="text-base leading-relaxed mb-6 mt-6 italic"
                 style={{
                   fontFamily: isEngineer ? "'Fira Code', monospace" : "'Playfair Display', serif",
                   color: isEngineer ? 'rgba(0, 255, 0, 0.6)' : 'rgba(45, 45, 45, 0.7)',
-                  fontSize: isEngineer ? '12px' : '16px',
-                  fontStyle: isEngineer ? 'normal' : 'italic',
-                  lineHeight: isEngineer ? '1.8' : '1.8',
-                  padding: isEngineer ? '12px' : '0',
-                  background: isEngineer ? 'rgba(0, 255, 0, 0.02)' : 'transparent',
-                  borderRadius: isEngineer ? '6px' : '0'
+                  fontSize: isEngineer ? '13px' : '16px',
+                  fontStyle: isEngineer ? 'normal' : 'italic'
                 }}
               >
                 {testimonial.reviewText}
@@ -195,7 +227,7 @@ export default function Testimonials({ persona }: TestimonialsProps) {
                 : 'Open for collaborations, partnerships, and creative projects'}
             </p>
             <motion.a
-              href="mailto:asa.samuel@example.com"
+              href="mailto:asa746090@gmail.com"
               className="inline-block px-8 py-4 rounded-lg text-sm font-bold tracking-wider uppercase"
               style={{
                 fontFamily: isEngineer ? "'Fira Code', monospace" : "'Inter', sans-serif",
