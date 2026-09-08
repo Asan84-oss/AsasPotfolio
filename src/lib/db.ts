@@ -99,6 +99,123 @@ function setToStorage<T>(key: string, value: T): void {
 }
 
 // ─────────────────────────────────────────────
+// SEED DATA (Initial projects and testimonials)
+// ─────────────────────────────────────────────
+
+const SEED_PROJECTS: Omit<Project, 'id' | 'createdAt'>[] = [
+  {
+    persona: 'software_engineer',
+    name: 'Centralized Customer Complaint Tracking System for UBA Bank',
+    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
+    projectUrl: '#',
+    description: 'HTML, CSS, JavaScript analytics dashboard tracking financial grievances. Real-time complaint resolution metrics, automated escalation workflows, and comprehensive reporting for banking operations.',
+  },
+  {
+    persona: 'software_engineer',
+    name: 'Voice-Cloned AI Assistant Project',
+    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop',
+    projectUrl: '#',
+    description: 'Autonomous assistant with voice-cloning pipelines streaming interactions over WhatsApp. Deep learning models for natural language processing and real-time voice synthesis.',
+  },
+  {
+    persona: 'software_engineer',
+    name: 'Transactional Microservices Architecture',
+    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=400&fit=crop',
+    projectUrl: '#',
+    description: 'Distributed system handling high-volume financial transactions with ACID compliance, event-driven architecture, and zero-downtime deployments.',
+  },
+  {
+    persona: 'software_engineer',
+    name: 'Autonomous Code Review Agent',
+    imageUrl: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&h=400&fit=crop',
+    projectUrl: '#',
+    description: 'AI-powered code analysis tool that automatically reviews pull requests, identifies security vulnerabilities, and suggests optimizations using LLM integration.',
+  },
+  {
+    persona: 'content_creator',
+    name: 'TikTok Community Growth: 0 → 50,000+ Followers',
+    imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=400&fit=crop',
+    projectUrl: 'https://tiktok.com/@lordsprayer11',
+    description: 'Case study on scaling a primary TikTok community to 50,000+ followers organically in 3 months. Algorithm optimization, trend-jacking, and authentic engagement strategies.',
+  },
+  {
+    persona: 'content_creator',
+    name: 'Backup Asset: 4,000+ Active Followers in 30 Days',
+    imageUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&h=400&fit=crop',
+    projectUrl: 'https://tiktok.com/@graceatwork07',
+    description: 'Built a backup asset to 4,000+ active followers in 30 days using advanced editing suites (CapCut) and trend-jacking. Replicable growth framework for content creators.',
+  },
+  {
+    persona: 'content_creator',
+    name: 'Brand Viral Video Campaign',
+    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&h=400&fit=crop',
+    projectUrl: 'https://tiktok.com/@glorious.god472',
+    description: 'Produced viral short-form video assets for brand partnerships. Clean visual storytelling, strategic hook placement, and data-driven content optimization.',
+  },
+];
+
+const SEED_TESTIMONIALS: Omit<Testimonial, 'id'>[] = [
+  {
+    persona: 'software_engineer',
+    clientName: 'Emmanuel Okoro',
+    clientImageUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa delivered our complaint tracking system ahead of schedule. His understanding of financial workflows and ability to translate complex requirements into clean, functional code is exceptional. The dashboard has transformed how we handle customer grievances.',
+    company: 'UBA Bank — Digital Operations'
+  },
+  {
+    persona: 'software_engineer',
+    clientName: 'Dr. Amina Bello',
+    clientImageUrl: 'https://images.unsplash.com/photo-1438761681033-6461ffad8d80?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'The voice-cloned AI assistant Asa built for us is remarkable. His expertise in deep learning pipelines and real-time streaming architecture made what seemed impossible, possible. He communicates clearly and delivers consistently.',
+    company: 'NeuralFlow AI Labs'
+  },
+  {
+    persona: 'content_creator',
+    clientName: 'Chioma Nwosu',
+    clientImageUrl: 'https://images.unsplash.com/photo-1494790108377-be9c29b29330?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Working with Asa was a game-changer for our brand. He took our vague ideas and turned them into viral content that reached millions. His understanding of the TikTok algorithm is unmatched, and his editing skills are top-tier.',
+    company: 'GlowUp Beauty — Brand Director'
+  },
+  {
+    persona: 'content_creator',
+    clientName: 'Tunde Adeyemi',
+    clientImageUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=100&h=100&fit=crop&crop=face',
+    reviewText: 'Asa helped us build a TikTok presence from scratch. Within 30 days, we had 4,000 engaged followers and content that consistently hit the For You page. His strategic approach to trend-jacking is brilliant.',
+    company: 'Lagos Streetwear Co.'
+  },
+];
+
+// ─────────────────────────────────────────────
+// SEED FUNCTION
+// ─────────────────────────────────────────────
+
+function seedDatabase() {
+  // Only seed if projects table is empty
+  const existingProjects = getFromStorage<Project[]>(STORAGE_KEYS.PROJECTS, []);
+  if (existingProjects.length === 0) {
+    const projects: Project[] = SEED_PROJECTS.map(data => ({
+      ...data,
+      id: generateId('proj'),
+      createdAt: new Date().toISOString().split('T')[0],
+    }));
+    setToStorage(STORAGE_KEYS.PROJECTS, projects);
+  }
+
+  // Only seed if testimonials table is empty
+  const existingTestimonials = getFromStorage<Testimonial[]>(STORAGE_KEYS.TESTIMONIALS, []);
+  if (existingTestimonials.length === 0) {
+    const testimonials: Testimonial[] = SEED_TESTIMONIALS.map(data => ({
+      ...data,
+      id: generateId('test'),
+    }));
+    setToStorage(STORAGE_KEYS.TESTIMONIALS, testimonials);
+  }
+}
+
+// Run seed on module load
+seedDatabase();
+
+// ─────────────────────────────────────────────
 // MOCK DATABASE API
 // ─────────────────────────────────────────────
 
