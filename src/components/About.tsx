@@ -161,7 +161,7 @@ export default function About({ persona }: AboutProps) {
                 }}
               >
                 <h4 className="text-xs font-bold mb-4" style={{ color: '#FF006E', fontFamily: "'Fira Code', monospace" }}>
-                  // BIOGRAPHY
+                  // {biography?.pitchTitle || 'BIOGRAPHY'}
                 </h4>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace", fontSize: '12px' }}>
                   {biography?.bioText || "Bilingual Software Engineer based in Douala, Cameroon. Specializing in full-stack web applications, autonomous AI coding agents, and robust transactional architectures. I build systems that eliminate bottlenecks and scale seamlessly — from UBA Bank's complaint tracking infrastructure to voice-cloned AI assistants streaming over WhatsApp."}
@@ -247,6 +247,17 @@ export default function About({ persona }: AboutProps) {
             >
               {/* Bio */}
               <div>
+                {biography?.pitchTitle && (
+                  <h3
+                    className="text-2xl md:text-3xl font-bold mb-6"
+                    style={{
+                      fontFamily: "'Playfair Display', serif",
+                      color: '#2D2D2D'
+                    }}
+                  >
+                    {biography.pitchTitle}
+                  </h3>
+                )}
                 <p
                   className="text-lg md:text-xl leading-relaxed"
                   style={{
