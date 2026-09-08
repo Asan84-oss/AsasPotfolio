@@ -1,4 +1,7 @@
 import { motion } from 'framer-motion';
+import { useState, useEffect } from 'react';
+import db from '../lib/db';
+import type { Biography } from '../lib/db';
 
 interface AboutProps {
   persona: 'engineer' | 'creator';
@@ -6,6 +9,35 @@ interface AboutProps {
 
 export default function About({ persona }: AboutProps) {
   const isEngineer = persona === 'engineer';
+  const [biography, setBiography] = useState<Biography | null>(null);
+
+  // Load biography from database
+  useEffect(() => {
+    const personaKey = isEngineer ? 'software_engineer' : 'content_creator';
+    const bio = db.biographies.getByPersona(personaKey);
+    setBiography(bio);
+
+    // Listen for storage changes (when admin makes updates)
+    const handleStorageChange = () => {
+      const updatedBio = db.biographies.getByPersona(personaKey);
+      setBiography(updatedBio);
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also refresh on visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const updatedBio = db.biographies.getByPersona(personaKey);
+        setBiography(updatedBio);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isEngineer]);
 
   const engineerSkills = [
     'Node.js', 'PHP', 'React', 'Python', 'DeepSeek', 'Qwen', 'Gemini',
@@ -132,7 +164,7 @@ export default function About({ persona }: AboutProps) {
                   // BIOGRAPHY
                 </h4>
                 <p className="text-sm leading-relaxed" style={{ color: 'rgba(0, 255, 0, 0.6)', fontFamily: "'Fira Code', monospace", fontSize: '12px' }}>
-                  Bilingual Software Engineer based in Douala, Cameroon. Specializing in full-stack web applications, autonomous AI coding agents, and robust transactional architectures. I build systems that eliminate bottlenecks and scale seamlessly — from UBA Bank's complaint tracking infrastructure to voice-cloned AI assistants streaming over WhatsApp.
+                  {biography?.bioText || "Bilingual Software Engineer based in Douala, Cameroon. Specializing in full-stack web applications, autonomous AI coding agents, and robust transactional architectures. I build systems that eliminate bottlenecks and scale seamlessly — from UBA Bank's complaint tracking infrastructure to voice-cloned AI assistants streaming over WhatsApp."}
                 </p>
               </div>
 
@@ -223,7 +255,7 @@ export default function About({ persona }: AboutProps) {
                     lineHeight: '1.8'
                   }}
                 >
-                  I'm Asa Samuel Bless, a bilingual digital marketer and content creator based in Douala, Cameroon. My work lives at the intersection of algorithmic strategy and authentic storytelling — turning brand messages into viral short-form video assets that resonate with millions.
+                  {biography?.bioText || "I'm Asa Samuel Bless, a bilingual digital marketer and content creator based in Douala, Cameroon. My work lives at the intersection of algorithmic strategy and authentic storytelling — turning brand messages into viral short-form video assets that resonate with millions."}
                 </p>
               </div>
 

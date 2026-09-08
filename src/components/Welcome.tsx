@@ -1,5 +1,7 @@
 import { motion } from 'framer-motion';
 import { useState, useEffect } from 'react';
+import db from '../lib/db';
+import type { Biography } from '../lib/db';
 
 interface WelcomeProps {
   persona: 'engineer' | 'creator';
@@ -9,11 +11,39 @@ export default function Welcome({ persona }: WelcomeProps) {
   const isEngineer = persona === 'engineer';
   const [displayedText, setDisplayedText] = useState('');
   const [showCursor, setShowCursor] = useState(true);
+  const [biography, setBiography] = useState<Biography | null>(null);
 
-  const engineerPitch = "Data-driven Software Engineer specializing in full-stack applications, autonomous AI coding agents, and robust transactional architectures. I eliminate systems bottlenecks and scale backend infrastructure seamlessly.";
-  const creatorPitch = "Algorithm-focused Digital Marketer and Content Creator. Scaled an organic TikTok community to 50,000+ followers in 3 months. I translate brand messages into viral short-form video assets using clean visual storytelling.";
+  // Load biography from database
+  useEffect(() => {
+    const personaKey = isEngineer ? 'software_engineer' : 'content_creator';
+    const bio = db.biographies.getByPersona(personaKey);
+    setBiography(bio);
 
-  const pitch = isEngineer ? engineerPitch : creatorPitch;
+    // Listen for storage changes (when admin makes updates)
+    const handleStorageChange = () => {
+      const updatedBio = db.biographies.getByPersona(personaKey);
+      setBiography(updatedBio);
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also refresh on visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        const updatedBio = db.biographies.getByPersona(personaKey);
+        setBiography(updatedBio);
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isEngineer]);
+
+  const pitch = biography?.bioText || (isEngineer 
+    ? "Data-driven Software Engineer specializing in full-stack applications, autonomous AI coding agents, and robust transactional architectures. I eliminate systems bottlenecks and scale backend infrastructure seamlessly."
+    : "Algorithm-focused Digital Marketer and Content Creator. Scaled an organic TikTok community to 50,000+ followers in 3 months. I translate brand messages into viral short-form video assets using clean visual storytelling.");
 
   // Terminal typing effect for engineer mode
   useEffect(() => {
@@ -147,7 +177,7 @@ export default function Welcome({ persona }: WelcomeProps) {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 1.5, delay: 0.8, ease: 'easeOut' }}
             >
-              {creatorPitch}
+              {pitch}
             </motion.p>
           )}
         </motion.div>
