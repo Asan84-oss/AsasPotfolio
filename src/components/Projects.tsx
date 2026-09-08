@@ -1,79 +1,44 @@
 import { motion, AnimatePresence } from 'framer-motion';
-import { useState, useRef } from 'react';
+import { useState, useRef, useEffect } from 'react';
+import db from '../lib/db';
+import type { Project } from '../lib/db';
 
 interface ProjectsProps {
   persona: 'engineer' | 'creator';
 }
 
-// Asa's actual project data
-const engineerProjects = [
-  {
-    id: 'eng-1',
-    name: 'Centralized Customer Complaint Tracking System for UBA Bank',
-    imageUrl: 'https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&h=400&fit=crop',
-    projectUrl: '#',
-    description: 'HTML, CSS, JavaScript analytics dashboard tracking financial grievances. Real-time complaint resolution metrics, automated escalation workflows, and comprehensive reporting for banking operations.',
-    createdAt: '2024'
-  },
-  {
-    id: 'eng-2',
-    name: 'Voice-Cloned AI Assistant Project',
-    imageUrl: 'https://images.unsplash.com/photo-1677442136019-21780ecad995?w=600&h=400&fit=crop',
-    projectUrl: '#',
-    description: 'Autonomous assistant with voice-cloning pipelines streaming interactions over WhatsApp. Deep learning models for natural language processing and real-time voice synthesis.',
-    createdAt: '2024'
-  },
-  {
-    id: 'eng-3',
-    name: 'Transactional Microservices Architecture',
-    imageUrl: 'https://images.unsplash.com/photo-1558494949-ef010cbdcc31?w=600&h=400&fit=crop',
-    projectUrl: '#',
-    description: 'Distributed system handling high-volume financial transactions with ACID compliance, event-driven architecture, and zero-downtime deployments.',
-    createdAt: '2024'
-  },
-  {
-    id: 'eng-4',
-    name: 'Autonomous Code Review Agent',
-    imageUrl: 'https://images.unsplash.com/photo-1555949963-ff9fe0c870eb?w=600&h=400&fit=crop',
-    projectUrl: '#',
-    description: 'AI-powered code analysis tool that automatically reviews pull requests, identifies security vulnerabilities, and suggests optimizations using LLM integration.',
-    createdAt: '2024'
-  }
-];
-
-const creatorProjects = [
-  {
-    id: 'cre-1',
-    name: 'TikTok Community Growth: 0 → 50,000+ Followers',
-    imageUrl: 'https://images.unsplash.com/photo-1611162617474-5b21e879e113?w=600&h=400&fit=crop',
-    projectUrl: 'https://tiktok.com/@lordsprayer11',
-    description: 'Case study on scaling a primary TikTok community to 50,000+ followers organically in 3 months. Algorithm optimization, trend-jacking, and authentic engagement strategies.',
-    createdAt: '2024'
-  },
-  {
-    id: 'cre-2',
-    name: 'Backup Asset: 4,000+ Active Followers in 30 Days',
-    imageUrl: 'https://images.unsplash.com/photo-1536240478700-b869070f9279?w=600&h=400&fit=crop',
-    projectUrl: 'https://tiktok.com/@graceatwork07',
-    description: 'Built a backup asset to 4,000+ active followers in 30 days using advanced editing suites (CapCut) and trend-jacking. Replicable growth framework for content creators.',
-    createdAt: '2024'
-  },
-  {
-    id: 'cre-3',
-    name: 'Brand Viral Video Campaign',
-    imageUrl: 'https://images.unsplash.com/photo-1492691527719-9d1e07e534b4?w=600&h=400&fit=crop',
-    projectUrl: 'https://tiktok.com/@glorious.god472',
-    description: 'Produced viral short-form video assets for brand partnerships. Clean visual storytelling, strategic hook placement, and data-driven content optimization.',
-    createdAt: '2024'
-  }
-];
-
 export default function Projects({ persona }: ProjectsProps) {
   const isEngineer = persona === 'engineer';
   const [showAll, setShowAll] = useState(false);
+  const [projects, setProjects] = useState<Project[]>([]);
   const sectionRef = useRef<HTMLElement>(null);
 
-  const filteredProjects = isEngineer ? engineerProjects : creatorProjects;
+  // Load projects from database
+  useEffect(() => {
+    const personaKey = isEngineer ? 'software_engineer' : 'content_creator';
+    setProjects(db.projects.getByPersona(personaKey));
+
+    // Listen for storage changes (when admin makes updates)
+    const handleStorageChange = () => {
+      setProjects(db.projects.getByPersona(personaKey));
+    };
+    window.addEventListener('storage', handleStorageChange);
+
+    // Also refresh on visibility change (when user returns to tab)
+    const handleVisibilityChange = () => {
+      if (!document.hidden) {
+        setProjects(db.projects.getByPersona(personaKey));
+      }
+    };
+    document.addEventListener('visibilitychange', handleVisibilityChange);
+
+    return () => {
+      window.removeEventListener('storage', handleStorageChange);
+      document.removeEventListener('visibilitychange', handleVisibilityChange);
+    };
+  }, [isEngineer]);
+
+  const filteredProjects = projects;
   const visibleProjects = showAll ? filteredProjects : filteredProjects.slice(0, 3);
   const hasMore = filteredProjects.length > 3;
 
