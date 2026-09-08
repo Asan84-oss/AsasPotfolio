@@ -185,6 +185,19 @@ const SEED_TESTIMONIALS: Omit<Testimonial, 'id'>[] = [
   },
 ];
 
+const SEED_BIOGRAPHIES: Omit<Biography, 'id'>[] = [
+  {
+    persona: 'software_engineer',
+    pitchTitle: 'Software Engineer & Systems Architect',
+    bioText: "Bilingual Software Engineer based in Douala, Cameroon. Specializing in full-stack web applications, autonomous AI coding agents, and robust transactional architectures. I build systems that eliminate bottlenecks and scale seamlessly — from UBA Bank's complaint tracking infrastructure to voice-cloned AI assistants streaming over WhatsApp."
+  },
+  {
+    persona: 'content_creator',
+    pitchTitle: 'Digital Marketer & Content Creator',
+    bioText: "I'm Asa Samuel Bless, a bilingual digital marketer and content creator based in Douala, Cameroon. My work lives at the intersection of algorithmic strategy and authentic storytelling — turning brand messages into viral short-form video assets that resonate with millions."
+  },
+];
+
 // ─────────────────────────────────────────────
 // SEED FUNCTION
 // ─────────────────────────────────────────────
@@ -209,6 +222,16 @@ function seedDatabase() {
       id: generateId('test'),
     }));
     setToStorage(STORAGE_KEYS.TESTIMONIALS, testimonials);
+  }
+
+  // Only seed if biographies table is empty
+  const existingBiographies = getFromStorage<Biography[]>(STORAGE_KEYS.BIOGRAPHIES, []);
+  if (existingBiographies.length === 0) {
+    const biographies: Biography[] = SEED_BIOGRAPHIES.map(data => ({
+      ...data,
+      id: generateId('bio'),
+    }));
+    setToStorage(STORAGE_KEYS.BIOGRAPHIES, biographies);
   }
 }
 
